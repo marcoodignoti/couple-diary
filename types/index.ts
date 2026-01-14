@@ -1,0 +1,46 @@
+// Core types for Couple Diary
+
+export interface Profile {
+    id: string;
+    name: string;
+    email: string;
+    partner_id: string | null;
+    pairing_code: string | null;
+    pairing_code_expires_at: string | null;
+    created_at: string;
+}
+
+export type Mood = 'happy' | 'love' | 'grateful' | 'peaceful' | 'excited' | 'sad' | 'anxious' | 'tired';
+
+export interface Entry {
+    id: string;
+    user_id: string;
+    content: string;
+    mood: Mood | null;
+    is_special_date: boolean;
+    unlock_date: string; // ISO date string
+    created_at: string;
+}
+
+export interface Reaction {
+    id: string;
+    entry_id: string;
+    user_id: string;
+    start_index: number;
+    end_index: number;
+    reaction_type: 'heart' | 'note';
+    note_content: string | null;
+    created_at: string;
+}
+
+export interface PartnerEntry extends Entry {
+    isUnlocked: boolean;
+    reactions?: Reaction[];
+}
+
+export interface CalendarDayData {
+    date: string;
+    userWrote: boolean;
+    partnerWrote: boolean;
+    color: 'gray' | 'blue' | 'gold';
+}
