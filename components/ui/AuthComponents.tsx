@@ -1,14 +1,20 @@
+import * as Haptics from 'expo-haptics';
 import React from 'react';
 import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
+    Pressable,
     StyleSheet,
     Text,
     TextInput,
-    TouchableOpacity,
     View,
 } from 'react-native';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+} from 'react-native-reanimated';
 
 interface AuthInputProps {
     label: string;
@@ -59,27 +65,49 @@ export function AuthButton({
     loading = false,
     variant = 'primary'
 }: AuthButtonProps) {
+    const scale = useSharedValue(1);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
+
+    const handlePressIn = () => {
+        scale.value = withSpring(0.97, { damping: 15, stiffness: 400 });
+        if (Platform.OS !== 'web') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        }
+    };
+
+    const handlePressOut = () => {
+        scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+    };
+
     return (
-        <TouchableOpacity
-            style={[
-                styles.button,
-                variant === 'secondary' && styles.buttonSecondary,
-            ]}
+        <Pressable
             onPress={onPress}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
             disabled={loading}
-            activeOpacity={0.8}
         >
-            {loading ? (
-                <ActivityIndicator color={variant === 'primary' ? '#FFF' : '#E8B4B8'} />
-            ) : (
-                <Text style={[
-                    styles.buttonText,
-                    variant === 'secondary' && styles.buttonTextSecondary,
-                ]}>
-                    {title}
-                </Text>
-            )}
-        </TouchableOpacity>
+            <Animated.View
+                style={[
+                    styles.button,
+                    variant === 'secondary' && styles.buttonSecondary,
+                    animatedStyle,
+                ]}
+            >
+                {loading ? (
+                    <ActivityIndicator color={variant === 'primary' ? '#FFF' : '#E8B4B8'} />
+                ) : (
+                    <Text style={[
+                        styles.buttonText,
+                        variant === 'secondary' && styles.buttonTextSecondary,
+                    ]}>
+                        {title}
+                    </Text>
+                )}
+            </Animated.View>
+        </Pressable>
     );
 }
 

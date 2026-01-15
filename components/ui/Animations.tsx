@@ -1,5 +1,6 @@
+import * as Haptics from 'expo-haptics';
 import React from 'react';
-import { Pressable, ViewStyle } from 'react-native';
+import { Platform, Pressable, ViewStyle } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -11,16 +12,18 @@ interface AnimatedPressableProps {
     onPress?: () => void;
     style?: ViewStyle;
     disabled?: boolean;
+    hapticStyle?: 'light' | 'medium' | 'heavy' | 'none';
 }
 
 /**
- * Pressable component with scale animation on press
+ * Pressable component with scale animation and haptic feedback on press
  */
 export function AnimatedPressable({
     children,
     onPress,
     style,
-    disabled = false
+    disabled = false,
+    hapticStyle = 'light',
 }: AnimatedPressableProps) {
     const scale = useSharedValue(1);
 
@@ -28,8 +31,25 @@ export function AnimatedPressable({
         transform: [{ scale: scale.value }],
     }));
 
+    const triggerHaptic = () => {
+        if (Platform.OS === 'web' || hapticStyle === 'none') return;
+
+        switch (hapticStyle) {
+            case 'light':
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                break;
+            case 'medium':
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                break;
+            case 'heavy':
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                break;
+        }
+    };
+
     const handlePressIn = () => {
         scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
+        triggerHaptic();
     };
 
     const handlePressOut = () => {
