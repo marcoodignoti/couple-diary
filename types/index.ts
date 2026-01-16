@@ -17,6 +17,7 @@ export interface Entry {
     user_id: string;
     content: string;
     mood: Mood | null;
+    photo_url: string | null;
     is_special_date: boolean;
     unlock_date: string; // ISO date string
     created_at: string;

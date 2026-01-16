@@ -35,7 +35,7 @@ export default function RegisterScreen() {
             clearError();
         } else {
             // Go to pairing screen after registration
-            router.replace('/(auth)/pairing');
+            router.replace('/onboarding/invite' as any);
         }
     };
 

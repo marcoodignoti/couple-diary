@@ -1,52 +1,72 @@
-import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useState } from 'react';
-import { Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Alert, Image, ImageStyle, ScrollView, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Icon } from '../../components/ui/Icon';
+
 import { GlassCard } from '../../components/ui/GlassCard';
-import { createPairingCode, getCurrentPairingCode } from '../../services/pairingService';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { BorderRadius, Colors, FontSizes, Shadows, Spacing } from '../../constants/theme';
+import { useResponsive } from '../../hooks/useResponsive';
+import { useStatusBarPadding } from '../../hooks/useStatusBarPadding';
+import { useTheme } from '../../hooks/useTheme';
+import {
+    authenticate,
+    getPrivacyLockPreference,
+    isBiometricsSupported,
+    setPrivacyLockPreference
+} from '../../services/biometricService';
+import { getNotificationPreference, setNotificationPreference } from '../../services/notificationService';
 import { useAuthStore } from '../../stores/authStore';
 
 export default function ProfileScreen() {
-    const { user, partner, signOut, refreshProfile, isLoading } = useAuthStore();
-    const [pairingCode, setPairingCode] = useState<string | null>(null);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const router = useRouter();
+    const { user, partner, isLoading, signOut } = useAuthStore();
+    const { isDark, colors } = useTheme();
+    const { contentMaxWidth, isTablet, horizontalPadding } = useResponsive();
+    const statusBarPadding = useStatusBarPadding();
 
-    // Refresh profile when screen is focused
-    useFocusEffect(
-        useCallback(() => {
-            refreshProfile();
-        }, [])
-    );
+    // Notification State
+    const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
 
-    const handleRefresh = async () => {
-        setIsRefreshing(true);
-        await refreshProfile();
-        setIsRefreshing(false);
+    // Privacy Lock State
+    const [privacyLockEnabled, setPrivacyLockEnabled] = React.useState(false);
+    const [biometricsAvailable, setBiometricsAvailable] = React.useState(false);
+
+    React.useEffect(() => {
+        // Load preferences
+        getNotificationPreference().then(setNotificationsEnabled);
+
+        // Privacy Lock
+        isBiometricsSupported().then(setBiometricsAvailable);
+        getPrivacyLockPreference().then(setPrivacyLockEnabled);
+    }, []);
+
+    const toggleNotifications = async (value: boolean) => {
+        setNotificationsEnabled(value); // Optimistic update
+        await setNotificationPreference(value);
     };
 
-    const handleGenerateCode = async () => {
-        if (!user?.id) return;
+    const togglePrivacyLock = async (originalValue: boolean) => {
+        // If turning ON, authenticate first to verify owner
+        const newValue = !originalValue;
 
-        setIsGenerating(true);
-        try {
-            // Check for existing code first
-            const existingCode = await getCurrentPairingCode(user.id);
-            if (existingCode) {
-                setPairingCode(existingCode);
-            } else {
-                const code = await createPairingCode(user.id);
-                setPairingCode(code);
+        if (newValue) {
+            const authenticated = await authenticate();
+            if (authenticated) {
+                setPrivacyLockEnabled(true);
+                await setPrivacyLockPreference(true);
             }
-        } catch (error: any) {
-            Alert.alert('Errore', error.message);
-        } finally {
-            setIsGenerating(false);
+        } else {
+            // Turning OFF is easy
+            setPrivacyLockEnabled(false);
+            await setPrivacyLockPreference(false);
         }
     };
 
     const handleLogout = () => {
         Alert.alert(
-            'Esci',
+            'Disconnetti',
             'Sei sicuro di voler uscire?',
             [
                 { text: 'Annulla', style: 'cancel' },
@@ -55,265 +75,420 @@ export default function ProfileScreen() {
                     style: 'destructive',
                     onPress: async () => {
                         await signOut();
-                        router.replace('/(auth)/login');
+                        router.replace('/(auth)/login' as any);
                     }
                 },
             ]
         );
     };
 
+    const getCoupleDate = () => {
+        if (user?.created_at) {
+            const date = new Date(user.created_at);
+            return date.getFullYear().toString();
+        }
+        return 'Oggi';
+    };
+
+    // Loading State
+    if (isLoading) {
+        return (
+            <ScrollView
+                contentInsetAdjustmentBehavior="automatic"
+                style={{ flex: 1, backgroundColor: colors.background }}
+                contentContainerStyle={{ paddingBottom: 120, paddingTop: statusBarPadding, paddingHorizontal: Spacing[5] }}
+            >
+                <View style={styles.loadingProfileContainer}>
+                    <Skeleton width={112} height={112} borderRadius={56} style={{ marginBottom: Spacing[4] }} />
+                    <Skeleton width={160} height={28} style={{ marginBottom: Spacing[2] }} />
+                    <Skeleton width={120} height={24} borderRadius={12} />
+                </View>
+                <Skeleton height={72} borderRadius={24} style={{ marginBottom: Spacing[3] }} />
+                <Skeleton height={72} borderRadius={24} style={{ marginBottom: Spacing[3] }} />
+                <Skeleton height={72} borderRadius={24} />
+            </ScrollView>
+        );
+    }
+
     return (
         <ScrollView
-            style={styles.container}
-            contentContainerStyle={styles.content}
-            refreshControl={
-                <RefreshControl
-                    refreshing={isRefreshing}
-                    onRefresh={handleRefresh}
-                    tintColor="#E8B4B8"
-                />
-            }
+            contentInsetAdjustmentBehavior="automatic"
+            style={{ flex: 1, backgroundColor: colors.background }}
+            contentContainerStyle={{
+                paddingBottom: 120,
+                paddingTop: statusBarPadding,
+                paddingHorizontal: horizontalPadding,
+                alignItems: isTablet ? 'center' : undefined,
+            }}
+            showsVerticalScrollIndicator={false}
         >
-            {/* Profile Header */}
-            <View style={styles.header}>
-                <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                        {user?.name?.charAt(0).toUpperCase() || '?'}
-                    </Text>
-                </View>
-                <Text style={styles.name}>{user?.name}</Text>
-                <Text style={styles.email}>{user?.email}</Text>
-            </View>
-
-            {/* Partner Status */}
-            <GlassCard>
-                <Text style={styles.sectionTitle}>💕 Partner</Text>
-                {partner ? (
-                    <View style={styles.partnerInfo}>
-                        <Text style={styles.partnerName}>{partner.name}</Text>
-                        <Text style={styles.partnerStatus}>Connesso ✓</Text>
-                    </View>
-                ) : (
-                    <View>
-                        <Text style={styles.noPartner}>
-                            Non sei ancora connesso a un partner
-                        </Text>
-
-                        {pairingCode ? (
-                            <View style={styles.codeContainer}>
-                                <Text style={styles.codeLabel}>Il tuo codice:</Text>
-                                <Text style={styles.code}>{pairingCode}</Text>
-                                <Text style={styles.codeHint}>Condividilo con il tuo partner</Text>
+            <View style={{ width: '100%', maxWidth: contentMaxWidth }}>
+                {/* Profile Header */}
+                <Animated.View entering={FadeInDown.duration(600)} style={styles.profileHeader}>
+                    <View style={styles.avatarContainer}>
+                        <View style={[
+                            styles.avatarWrapper,
+                            {
+                                borderColor: isDark ? Colors.surface.dark : Colors.white,
+                                backgroundColor: Colors.stone[200],
+                                boxShadow: Shadows.soft,
+                            } as ViewStyle
+                        ]}>
+                            {user?.email ? (
+                                <Image
+                                    source={{ uri: `https://api.dicebear.com/7.x/initials/png?seed=${user.name}&backgroundColor=C0847C` }}
+                                    style={styles.avatarImage}
+                                />
+                            ) : (
+                                <View style={styles.avatarPlaceholder}>
+                                    <Icon name="person" size={48} color={Colors.stone[400]} />
+                                </View>
+                            )}
+                        </View>
+                        {partner && (
+                            <View style={[
+                                styles.heartBadge,
+                                {
+                                    borderColor: isDark ? Colors.background.dark : Colors.white,
+                                    boxShadow: Shadows.md,
+                                } as ViewStyle
+                            ]}>
+                                <Icon name="favorite" size={14} color={Colors.white} />
                             </View>
-                        ) : (
-                            <TouchableOpacity
-                                style={styles.generateButton}
-                                onPress={handleGenerateCode}
-                                disabled={isGenerating}
-                            >
-                                <Text style={styles.generateButtonText}>
-                                    {isGenerating ? 'Generando...' : 'Genera Codice'}
-                                </Text>
-                            </TouchableOpacity>
                         )}
-
-                        <TouchableOpacity
-                            style={styles.enterCodeButton}
-                            onPress={() => router.push('/(auth)/pairing')}
-                        >
-                            <Text style={styles.enterCodeText}>
-                                Hai un codice? Inseriscilo →
+                    </View>
+                    <Text selectable style={[styles.profileName, { color: isDark ? Colors.white : Colors.text.light }]}>
+                        {user?.name || 'Utente'}{partner ? ` & ${partner.name}` : ''}
+                    </Text>
+                    {partner && (
+                        <View style={[styles.coupleBadge, { backgroundColor: isDark ? `${Colors.primary.dark}33` : `${Colors.primary.DEFAULT}1A` }]}>
+                            <Text style={[styles.coupleBadgeText, { color: isDark ? Colors.primary.dark : Colors.primary.DEFAULT }]}>
+                                Insieme dal {getCoupleDate()}
                             </Text>
+                        </View>
+                    )}
+                    {!partner && (
+                        <TouchableOpacity
+                            onPress={() => router.push('/(auth)/pairing' as any)}
+                            style={styles.connectPartnerButton}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.connectPartnerText}>Connetti Partner →</Text>
                         </TouchableOpacity>
-                    </View>
-                )}
-            </GlassCard>
+                    )}
+                </Animated.View>
 
-            {/* Stats */}
-            <GlassCard>
-                <Text style={styles.sectionTitle}>📊 Le tue statistiche</Text>
-                <View style={styles.statsGrid}>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statNumber}>-</Text>
-                        <Text style={styles.statLabel}>Pensieri scritti</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statNumber}>-</Text>
-                        <Text style={styles.statLabel}>Giorni consecutivi</Text>
+                {/* Menu Items */}
+                <View style={styles.menuContainer}>
+                    {/* Memories */}
+                    <Animated.View entering={FadeInDown.delay(100).duration(600)}>
+                        <GlassCard onPress={() => router.push('/calendar' as any)}>
+                            <View style={styles.menuRow}>
+                                <View style={styles.menuLeft}>
+                                    <View style={[styles.menuIcon, { backgroundColor: isDark ? `${Colors.primary.DEFAULT}33` : `${Colors.primary.DEFAULT}1A` }]}>
+                                        <Icon name="collections" size={22} color={Colors.primary.DEFAULT} />
+                                    </View>
+                                    <View>
+                                        <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>I Nostri Ricordi</Text>
+                                        <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Foto e momenti speciali</Text>
+                                    </View>
+                                </View>
+                                <Icon name="chevron-right" size={24} color={Colors.stone[300]} />
+                            </View>
+                        </GlassCard>
+                    </Animated.View>
+
+                    {/* Notifications */}
+                    <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+                        <GlassCard>
+                            <View style={styles.menuRow}>
+                                <View style={styles.menuLeft}>
+                                    <View style={[styles.menuIcon, { backgroundColor: isDark ? `${Colors.secondary.DEFAULT}33` : `${Colors.secondary.DEFAULT}1A` }]}>
+                                        <Icon name="notifications-active" size={22} color={Colors.secondary.DEFAULT} />
+                                    </View>
+                                    <View>
+                                        <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Notifiche</Text>
+                                        <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Promemoria giornalieri</Text>
+                                    </View>
+                                </View>
+                                <Switch
+                                    value={notificationsEnabled}
+                                    onValueChange={toggleNotifications}
+                                    trackColor={{ false: Colors.stone[300], true: Colors.secondary.DEFAULT }}
+                                    thumbColor={Colors.white}
+                                />
+                            </View>
+                        </GlassCard>
+                    </Animated.View>
+
+                    {/* Privacy Lock */}
+                    <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+                        <GlassCard>
+                            <View style={styles.menuRow}>
+                                <View style={styles.menuLeft}>
+                                    <View style={[styles.menuIcon, { backgroundColor: isDark ? 'rgba(20, 184, 166, 0.2)' : 'rgba(20, 184, 166, 0.1)' }]}>
+                                        <Icon name="lock" size={22} color="#14b8a6" />
+                                    </View>
+                                    <View>
+                                        <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Blocco Privacy</Text>
+                                        <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Biometria e passcode</Text>
+                                    </View>
+                                </View>
+                                <Switch
+                                    value={privacyLockEnabled}
+                                    onValueChange={() => togglePrivacyLock(privacyLockEnabled)}
+                                    disabled={!biometricsAvailable}
+                                    trackColor={{ false: Colors.stone[300], true: '#14b8a6' }}
+                                    thumbColor={Colors.white}
+                                />
+                            </View>
+                        </GlassCard>
+                    </Animated.View>
+
+                    {/* Account Section */}
+                    <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.accountSection}>
+                        <Text style={styles.sectionLabel}>Account</Text>
+                        <View style={[
+                            styles.accountCard,
+                            {
+                                backgroundColor: isDark ? Colors.surface.dark : Colors.white,
+                                borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
+                                boxShadow: Shadows.sm,
+                            } as ViewStyle
+                        ]}>
+                            <TouchableOpacity
+                                onPress={() => router.push('/profile/edit' as any)}
+                                style={[styles.accountRow, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={[styles.accountRowText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Modifica Profilo</Text>
+                                <Icon name="arrow-forward-ios" size={14} color={Colors.stone[300]} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.accountRow, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={[styles.accountRowText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Piano Abbonamento</Text>
+                                <View style={styles.planRow}>
+                                    <View style={styles.freeBadge}>
+                                        <Text style={styles.freeBadgeText}>FREE</Text>
+                                    </View>
+                                    <Icon name="arrow-forward-ios" size={14} color={Colors.stone[300]} />
+                                </View>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={handleLogout}
+                                style={styles.logoutRow}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={styles.logoutText}>Esci</Text>
+                                <Icon name="logout" size={18} color="#fecaca" />
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+
+                    {/* Debug Section (Hidden/Small) */}
+                    <TouchableOpacity
+                        onPress={() => router.push('/onboarding/welcome')}
+                        style={[styles.debugButton, { backgroundColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}
+                        activeOpacity={0.5}
+                    >
+                        <Text style={styles.debugText}>Inizia Test Onboarding</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.footer}>
+                        <Text style={styles.versionText}>Couple Diary v2.4.0</Text>
+                        <Text style={styles.footerText}>Fatto con ❤️ per voi due</Text>
                     </View>
                 </View>
-            </GlassCard>
-
-            {/* Actions */}
-            <View style={styles.actions}>
-                <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={handleLogout}
-                    disabled={isLoading}
-                >
-                    <Text style={styles.logoutText}>
-                        {isLoading ? 'Uscendo...' : 'Esci dall\'account'}
-                    </Text>
-                </TouchableOpacity>
             </View>
-
-            {/* App Info */}
-            <Text style={styles.version}>Couple Diary v1.0.0 💕</Text>
         </ScrollView>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FAF9F6',
-    },
-    content: {
-        padding: 16,
-        paddingBottom: 100,
-    },
-    header: {
+const styles = {
+    loadingProfileContainer: {
         alignItems: 'center',
-        paddingVertical: 24,
-    },
-    avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#E8B4B8',
+        marginBottom: Spacing[6],
+    } as ViewStyle,
+    profileHeader: {
+        alignItems: 'center',
+        marginBottom: Spacing[8],
+    } as ViewStyle,
+    avatarContainer: {
+        position: 'relative',
+        marginBottom: Spacing[4],
+    } as ViewStyle,
+    avatarWrapper: {
+        width: 112,
+        height: 112,
+        borderRadius: 56,
+        borderWidth: 4,
+        overflow: 'hidden',
+    } as ViewStyle,
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+    } as ImageStyle,
+    avatarPlaceholder: {
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
         justifyContent: 'center',
+    } as ViewStyle,
+    heartBadge: {
+        position: 'absolute',
+        top: -8,
+        right: -8,
+        width: 32,
+        height: 32,
+        backgroundColor: Colors.secondary.DEFAULT,
+        borderRadius: BorderRadius.full,
         alignItems: 'center',
-        marginBottom: 16,
-        shadowColor: '#E8B4B8',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
-    },
-    avatarText: {
-        fontSize: 32,
+        justifyContent: 'center',
+        borderWidth: 2,
+    } as ViewStyle,
+    profileName: {
+        fontSize: FontSizes['2xl'],
+        fontWeight: '800',
+        marginBottom: Spacing[1],
+    } as TextStyle,
+    coupleBadge: {
+        paddingHorizontal: Spacing[3],
+        paddingVertical: Spacing[1],
+        borderRadius: BorderRadius.full,
+        marginTop: Spacing[2],
+    } as ViewStyle,
+    coupleBadgeText: {
+        fontSize: FontSizes.sm,
         fontWeight: '700',
-        color: '#FFF',
-    },
-    name: {
-        fontSize: 24,
+        letterSpacing: 0.5,
+    } as TextStyle,
+    connectPartnerButton: {
+        backgroundColor: `${Colors.secondary.DEFAULT}1A`,
+        paddingHorizontal: Spacing[4],
+        paddingVertical: Spacing[2],
+        borderRadius: BorderRadius.full,
+        marginTop: Spacing[2],
+    } as ViewStyle,
+    connectPartnerText: {
+        color: Colors.secondary.DEFAULT,
+        fontSize: FontSizes.sm,
         fontWeight: '700',
-        color: '#2C3E50',
-    },
-    email: {
-        fontSize: 14,
-        color: '#7F8C8D',
-        marginTop: 4,
-    },
-    sectionTitle: {
-        fontSize: 17,
-        fontWeight: '600',
-        color: '#2C3E50',
-        marginBottom: 16,
-    },
-    partnerInfo: {
+        letterSpacing: 0.5,
+    } as TextStyle,
+    menuContainer: {
+        gap: Spacing[2],
+    } as ViewStyle,
+    menuRow: {
         flexDirection: 'row',
+        alignItems: 'center',
         justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    partnerName: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#2C3E50',
-    },
-    partnerStatus: {
-        fontSize: 14,
-        color: '#27AE60',
-        fontWeight: '500',
-    },
-    noPartner: {
-        fontSize: 14,
-        color: '#7F8C8D',
-        marginBottom: 16,
-    },
-    codeContainer: {
-        backgroundColor: 'rgba(232, 180, 184, 0.1)',
-        borderRadius: 16,
-        padding: 20,
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    codeLabel: {
-        fontSize: 12,
-        color: '#7F8C8D',
-        marginBottom: 8,
-    },
-    code: {
-        fontSize: 32,
-        fontWeight: '700',
-        color: '#E8B4B8',
-        letterSpacing: 4,
-    },
-    codeHint: {
-        fontSize: 12,
-        color: '#7F8C8D',
-        marginTop: 8,
-    },
-    generateButton: {
-        backgroundColor: '#E8B4B8',
-        borderRadius: 12,
-        padding: 14,
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    generateButtonText: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#FFF',
-    },
-    enterCodeButton: {
-        alignItems: 'center',
-        padding: 8,
-    },
-    enterCodeText: {
-        fontSize: 14,
-        color: '#E8B4B8',
-    },
-    statsGrid: {
+    } as ViewStyle,
+    menuLeft: {
         flexDirection: 'row',
-        gap: 16,
-    },
-    statItem: {
-        flex: 1,
-        backgroundColor: 'rgba(232, 180, 184, 0.1)',
-        borderRadius: 12,
-        padding: 16,
         alignItems: 'center',
-    },
-    statNumber: {
-        fontSize: 28,
+        gap: Spacing[4],
+    } as ViewStyle,
+    menuIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: BorderRadius.xl,
+        alignItems: 'center',
+        justifyContent: 'center',
+    } as ViewStyle,
+    menuTitle: {
         fontWeight: '700',
-        color: '#E8B4B8',
-    },
-    statLabel: {
-        fontSize: 11,
-        color: '#7F8C8D',
-        marginTop: 4,
-        textAlign: 'center',
-    },
-    actions: {
-        marginTop: 24,
-    },
-    logoutButton: {
-        backgroundColor: 'rgba(231, 76, 60, 0.1)',
-        borderRadius: 12,
-        padding: 16,
+        fontSize: FontSizes.lg,
+    } as TextStyle,
+    menuSubtitle: {
+        fontSize: FontSizes.xs,
+    } as TextStyle,
+    accountSection: {
+        paddingTop: Spacing[6],
+    } as ViewStyle,
+    sectionLabel: {
+        fontSize: FontSizes.sm,
+        fontWeight: '700',
+        color: Colors.stone[400],
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+        marginBottom: Spacing[2],
+        marginLeft: Spacing[4],
+    } as TextStyle,
+    accountCard: {
+        borderRadius: 32,
+        borderCurve: 'continuous',
+        borderWidth: 1,
+        overflow: 'hidden',
+    } as ViewStyle,
+    accountRow: {
+        padding: Spacing[4],
+        flexDirection: 'row',
         alignItems: 'center',
-    },
+        justifyContent: 'space-between',
+        borderBottomWidth: 1,
+    } as ViewStyle,
+    accountRowText: {
+        fontWeight: '500',
+        fontSize: FontSizes.base,
+    } as TextStyle,
+    planRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing[2],
+    } as ViewStyle,
+    freeBadge: {
+        backgroundColor: `${Colors.secondary.DEFAULT}1A`,
+        paddingHorizontal: Spacing[2],
+        paddingVertical: Spacing[1],
+        borderRadius: BorderRadius.md,
+    } as ViewStyle,
+    freeBadgeText: {
+        fontSize: FontSizes.xs,
+        fontWeight: '700',
+        color: Colors.secondary.DEFAULT,
+    } as TextStyle,
+    logoutRow: {
+        padding: Spacing[4],
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    } as ViewStyle,
     logoutText: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#E74C3C',
-    },
-    version: {
-        fontSize: 12,
-        color: '#A0AEC0',
-        textAlign: 'center',
-        marginTop: 32,
-    },
-});
+        color: '#ef4444',
+        fontWeight: '500',
+        fontSize: FontSizes.base,
+    } as TextStyle,
+    debugButton: {
+        marginTop: Spacing[8],
+        alignSelf: 'center',
+        paddingHorizontal: Spacing[4],
+        paddingVertical: Spacing[2],
+        borderRadius: BorderRadius.full,
+        opacity: 0.5,
+    } as ViewStyle,
+    debugText: {
+        fontSize: 10,
+        color: Colors.stone[400],
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+        fontWeight: '700',
+    } as TextStyle,
+    footer: {
+        marginTop: Spacing[4],
+        marginBottom: Spacing[8],
+        alignItems: 'center',
+    } as ViewStyle,
+    versionText: {
+        fontSize: FontSizes.xs,
+        color: Colors.stone[400],
+    } as TextStyle,
+    footerText: {
+        fontSize: FontSizes.xs,
+        color: Colors.stone[300],
+        marginTop: Spacing[1],
+    } as TextStyle,
+};

@@ -28,7 +28,7 @@ export default function PairingScreen() {
                 setMode('generate');
             }
         } catch (error) {
-            console.error('Error checking existing code:', error);
+            console.error('Error checking existing code');
         }
     };
 
@@ -40,8 +40,8 @@ export default function PairingScreen() {
             const code = await createPairingCode(user.id);
             setPairingCode(code);
             setMode('generate');
-        } catch (error: any) {
-            Alert.alert('Errore', error.message);
+        } catch (error) {
+            Alert.alert('Errore', 'Impossibile generare il codice. Riprova.');
         } finally {
             setIsLoading(false);
         }
@@ -61,8 +61,8 @@ export default function PairingScreen() {
             await fetchPartner();
             Alert.alert('Connesso! 💕', 'Ora siete collegati. Buona scrittura!');
             router.replace('/(tabs)');
-        } catch (error: any) {
-            Alert.alert('Errore', error.message);
+        } catch (error) {
+            Alert.alert('Errore', 'Codice non valido o scaduto. Riprova.');
         } finally {
             setIsLoading(false);
         }

@@ -12,11 +12,17 @@ interface AuthState {
     // Actions
     initialize: () => Promise<void>;
     refreshProfile: () => Promise<void>;
+    updateProfile: (name: string) => Promise<void>;
     signUp: (email: string, password: string, name: string) => Promise<void>;
     signIn: (email: string, password: string) => Promise<void>;
     signOut: () => Promise<void>;
     fetchPartner: () => Promise<void>;
     clearError: () => void;
+
+    // Pairing
+    pairingCode: string | null;
+    generatePairingCode: () => Promise<void>;
+    pairWithPartner: (code: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -82,8 +88,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             if (profile?.partner_id && !get().partner) {
                 get().fetchPartner();
             }
+        } catch (error) {
+            console.error('Failed to refresh profile');
+        }
+    },
+
+    updateProfile: async (name: string) => {
+        const { user } = get();
+        if (!user) return;
+
+        try {
+            set({ isLoading: true, error: null });
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({ name })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Refresh local state
+            await get().refreshProfile();
+            set({ isLoading: false });
         } catch (error: any) {
-            console.error('Failed to refresh profile:', error.message);
+            set({ error: error.message, isLoading: false });
+            throw error;
         }
     },
 
@@ -105,7 +134,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 // Create profile
                 const { error: profileError } = await supabase
                     .from('profiles')
-                    .insert({
+                    .upsert({
                         id: data.user.id,
                         name,
                         email,
@@ -194,10 +223,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
             if (error) throw error;
             set({ partner });
-        } catch (error: any) {
-            console.error('Failed to fetch partner:', error.message);
+        } catch (error) {
+            console.error('Failed to fetch partner');
         }
     },
 
     clearError: () => set({ error: null }),
+
+    // Pairing Actions
+    pairingCode: null,
+
+    generatePairingCode: async () => {
+        const { user } = get();
+        if (!user) return;
+        try {
+            const { createPairingCode } = await import('../services/pairingService');
+            const code = await createPairingCode(user.id);
+            set({ pairingCode: code });
+        } catch (error: any) {
+            set({ error: error.message });
+        }
+    },
+
+    pairWithPartner: async (code: string) => {
+        const { user } = get();
+        if (!user) return;
+        try {
+            set({ isLoading: true, error: null });
+            const { connectWithCode } = await import('../services/pairingService');
+            await connectWithCode(user.id, code);
+
+            // Refresh profile to get partner_id
+            await get().refreshProfile();
+            set({ isLoading: false });
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+            throw error; // Re-throw for UI handling
+        }
+    },
 }));

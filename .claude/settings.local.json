@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm start)",
+      "Bash(npm view:*)",
+      "Bash(npm install:*)",
+      "Bash(npx patch-package:*)",
+      "Bash(npx expo start:*)",
+      "Bash(taskkill:*)",
+      "Bash(pkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Skill(expo-app-design:building-ui)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Skill(expo-app-design:api-routes)",
+      "Skill(expo-app-design:data-fetching)"
+    ]
+  }
+}

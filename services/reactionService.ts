@@ -7,9 +7,9 @@ import { supabase } from './supabase';
 export async function addReaction(
     entryId: string,
     userId: string,
-    startIndex: number,
-    endIndex: number,
     reactionType: 'heart' | 'note',
+    startIndex?: number,
+    endIndex?: number,
     noteContent?: string
 ): Promise<Reaction> {
     const { data, error } = await supabase
@@ -17,8 +17,8 @@ export async function addReaction(
         .insert({
             entry_id: entryId,
             user_id: userId,
-            start_index: startIndex,
-            end_index: endIndex,
+            start_index: startIndex ?? null,
+            end_index: endIndex ?? null,
             reaction_type: reactionType,
             note_content: noteContent || null,
         })

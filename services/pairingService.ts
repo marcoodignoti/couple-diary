@@ -46,7 +46,9 @@ export async function connectWithCode(myUserId: string, code: string): Promise<b
 
     if (error) {
         // Parse error message
-        if (error.message.includes('non valido') || error.message.includes('scaduto')) {
+        // Parse error message (handle both Italian and English or PG codes if possible)
+        const msg = error.message.toLowerCase();
+        if (msg.includes('non valido') || msg.includes('scaduto') || msg.includes('invalid') || msg.includes('expired')) {
             throw new Error('Codice non valido o scaduto');
         }
         throw new Error(error.message);

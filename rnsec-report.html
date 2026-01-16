@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>React Native Security Report - 14/01/2026</title>
+  <title>React Native Security Report - 16/01/2026</title>
   <style>
     * {
       margin: 0;
@@ -703,7 +703,7 @@
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
-      <span>Scan completed in <span class="scan-status-text">0.9s</span> <span class="divider">•</span> <span class="scan-status-text">45 files analyzed</span></span>
+      <span>Scan completed in <span class="scan-status-text">1.9s</span> <span class="divider">•</span> <span class="scan-status-text">72 files analyzed</span></span>
     </div>
 
     <div class="header">
@@ -719,13 +719,13 @@
         </div>
       </div>
       <div class="header-info">
-        <div class="info-item">Jan 14, 2026 • 2:03 PM</div>
+        <div class="info-item">Jan 16, 2026 • 1:26 PM</div>
       </div>
     </div>
     
     <div class="summary">
       <div class="summary-card total active" onclick="filterBySeverity('all')" data-filter="all">
-        <div class="number">9</div>
+        <div class="number">6</div>
         <h3>Total</h3>
       </div>
       <div class="summary-card high" onclick="filterBySeverity('high')" data-filter="high">
@@ -733,11 +733,11 @@
         <h3>High</h3>
       </div>
       <div class="summary-card medium" onclick="filterBySeverity('medium')" data-filter="medium">
-        <div class="number">9</div>
+        <div class="number">5</div>
         <h3>Medium</h3>
       </div>
       <div class="summary-card low" onclick="filterBySeverity('low')" data-filter="low">
-        <div class="number">0</div>
+        <div class="number">1</div>
         <h3>Low</h3>
       </div>
     </div>
@@ -747,6 +747,7 @@
       
       
       <div class="finding-group medium" data-severity="medium">
+        
         <div class="group-header">
           <div class="finding-left">
             <span class="severity-badge medium">
@@ -758,8 +759,7 @@
               MEDIUM
             </span>
             <div class="finding-title">
-              Backend error message or stack trace exposed to user
-              <span class="occurrence-count">3 occurrences</span>
+              Sensitive app without runtime integrity or tamper detection
               
             </div>
           </div>
@@ -771,53 +771,19 @@
         <div class="instances-container">
           <div class="instances-list">
             
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/stores/authStore.ts</span>
-                <span class="line-number-badge">Line 86</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
       <div class="finding-content-inner">
         
-          <div class="finding-description">Backend error message or stack trace exposed to user</div>
-        
             
         
-            
+            <div class="finding-location">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            <span class="file-path">C:/Users/marco/couple-diary/app/index.tsx</span>
+            <span class="line-number-badge">Line 1</span>
+            </div>
         
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">84</span>
-  <span class="line-content">            }</span>
-</div><div class="code-line ">
-  <span class="line-number">85</span>
-  <span class="line-content">        } catch (error: any) {</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">86</span>
-  <span class="line-content">            console.error(&#039;Failed to refresh profile:&#039;, error.message);</span>
-</div><div class="code-line ">
-  <span class="line-number">87</span>
-  <span class="line-content">        }</span>
-</div><div class="code-line ">
-  <span class="line-number">88</span>
-  <span class="line-content">    },</span>
-</div>
-          </div>
+            
         
         
         
@@ -827,146 +793,92 @@
               <div class="suggestion-title">
                 💡 Recommendation
               </div>
-            <div class="suggestion-text">Use generic error messages for users. Log detailed errors server-side only. Never expose stack traces or backend errors.</div>
+            <div class="suggestion-text">Implement runtime integrity checks: Play Integrity API (Android), App Attest (iOS), or signature verification to detect tampering.</div>
           </div>
         
       </div>
     
-        </div>
-      </div>
-    
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/stores/authStore.ts</span>
-                <span class="line-number-badge">Line 198</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
-      <div class="finding-content-inner">
-        
-          <div class="finding-description">Backend error message or stack trace exposed to user</div>
-        
-            
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">196</span>
-  <span class="line-content">            set({ partner });</span>
-</div><div class="code-line ">
-  <span class="line-number">197</span>
-  <span class="line-content">        } catch (error: any) {</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">198</span>
-  <span class="line-content">            console.error(&#039;Failed to fetch partner:&#039;, error.message);</span>
-</div><div class="code-line ">
-  <span class="line-number">199</span>
-  <span class="line-content">        }</span>
-</div><div class="code-line ">
-  <span class="line-number">200</span>
-  <span class="line-content">    },</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Use generic error messages for users. Log detailed errors server-side only. Never expose stack traces or backend errors.</div>
-          </div>
-        
-      </div>
-    
-        </div>
-      </div>
-    
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/stores/entryStore.ts</span>
-                <span class="line-number-badge">Line 91</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
-      <div class="finding-content-inner">
-        
-          <div class="finding-description">Backend error message or stack trace exposed to user</div>
-        
-            
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">89</span>
-  <span class="line-content">            set({ timeCapsuleEntry: data || null });</span>
-</div><div class="code-line ">
-  <span class="line-number">90</span>
-  <span class="line-content">        } catch (error: any) {</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">91</span>
-  <span class="line-content">            console.error(&#039;Time capsule fetch error:&#039;, error.message);</span>
-</div><div class="code-line ">
-  <span class="line-number">92</span>
-  <span class="line-content">        }</span>
-</div><div class="code-line ">
-  <span class="line-number">93</span>
-  <span class="line-content">    },</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Use generic error messages for users. Log detailed errors server-side only. Never expose stack traces or backend errors.</div>
-          </div>
-        
-      </div>
-    
-        </div>
-      </div>
-    
           </div>
         </div>
-      </div>
       
+      </div>
+    
+      <div class="finding-group medium" data-severity="medium">
+        
+        <div class="group-header">
+          <div class="finding-left">
+            <span class="severity-badge medium">
+              <span class="severity-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </span>
+              MEDIUM
+            </span>
+            <div class="finding-title">
+              console.error() logging Sensitive Data: Authentication failed
+              
+            </div>
+          </div>
+          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+        
+        <div class="instances-container">
+          <div class="instances-list">
+            
+      <div class="finding-content-inner">
+        
+            
+        
+            <div class="finding-location">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            <span class="file-path">C:/Users/marco/couple-diary/services/biometricService.ts</span>
+            <span class="line-number-badge">Line 22</span>
+            </div>
+        
+            
+        
+            <div class="code-snippet">
+            <div class="code-line ">
+  <span class="line-number">20</span>
+  <span class="line-content">        return result.success;</span>
+</div><div class="code-line ">
+  <span class="line-number">21</span>
+  <span class="line-content">    } catch (error) {</span>
+</div><div class="code-line highlighted medium">
+  <span class="line-number">22</span>
+  <span class="line-content">        console.error(&#039;Authentication failed&#039;, error);</span>
+</div><div class="code-line ">
+  <span class="line-number">23</span>
+  <span class="line-content">        return false;</span>
+</div><div class="code-line ">
+  <span class="line-number">24</span>
+  <span class="line-content">    }</span>
+</div>
+          </div>
+        
+        
+        
+            
+        
+            <div class="suggestion">
+              <div class="suggestion-title">
+                💡 Recommendation
+              </div>
+            <div class="suggestion-text">Remove console logs with sensitive data or wrap in __DEV__ check. Use a logging library with data filtering for production.</div>
+          </div>
+        
+      </div>
+    
+          </div>
+        </div>
+      
+      </div>
+    
       <div class="finding-group medium" data-severity="medium">
         <div class="group-header">
           <div class="finding-left">
@@ -1000,8 +912,8 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/app/(auth)/pairing.tsx</span>
-                <span class="line-number-badge">Line 31</span>
+                <span class="file-path">C:/Users/marco/couple-diary/services/biometricService.ts</span>
+                <span class="line-number-badge">Line 22</span>
               </div>
               
             </div>
@@ -1023,20 +935,20 @@
         
             <div class="code-snippet">
             <div class="code-line ">
-  <span class="line-number">29</span>
-  <span class="line-content">            }</span>
+  <span class="line-number">20</span>
+  <span class="line-content">        return result.success;</span>
 </div><div class="code-line ">
-  <span class="line-number">30</span>
-  <span class="line-content">        } catch (error) {</span>
+  <span class="line-number">21</span>
+  <span class="line-content">    } catch (error) {</span>
 </div><div class="code-line highlighted medium">
-  <span class="line-number">31</span>
-  <span class="line-content">            console.error(&#039;Error checking existing code:&#039;, error);</span>
+  <span class="line-number">22</span>
+  <span class="line-content">        console.error(&#039;Authentication failed&#039;, error);</span>
 </div><div class="code-line ">
-  <span class="line-number">32</span>
-  <span class="line-content">        }</span>
+  <span class="line-number">23</span>
+  <span class="line-content">        return false;</span>
 </div><div class="code-line ">
-  <span class="line-number">33</span>
-  <span class="line-content">    };</span>
+  <span class="line-number">24</span>
+  <span class="line-content">    }</span>
 </div>
           </div>
         
@@ -1064,8 +976,8 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/app/entry/[id].tsx</span>
-                <span class="line-number-badge">Line 36</span>
+                <span class="file-path">C:/Users/marco/couple-diary/app/(tabs)/insight.tsx</span>
+                <span class="line-number-badge">Line 68</span>
               </div>
               
             </div>
@@ -1087,19 +999,19 @@
         
             <div class="code-snippet">
             <div class="code-line ">
-  <span class="line-number">34</span>
-  <span class="line-content">            setReactions(data);</span>
+  <span class="line-number">66</span>
+  <span class="line-content">            alert(`Reazione inviata: ${emoji}`);</span>
 </div><div class="code-line ">
-  <span class="line-number">35</span>
+  <span class="line-number">67</span>
   <span class="line-content">        } catch (error) {</span>
 </div><div class="code-line highlighted medium">
-  <span class="line-number">36</span>
-  <span class="line-content">            console.error(&#039;Failed to load reactions:&#039;, error);</span>
+  <span class="line-number">68</span>
+  <span class="line-content">            console.error(&#039;Failed to react:&#039;, error);</span>
 </div><div class="code-line ">
-  <span class="line-number">37</span>
+  <span class="line-number">69</span>
   <span class="line-content">        }</span>
 </div><div class="code-line ">
-  <span class="line-number">38</span>
+  <span class="line-number">70</span>
   <span class="line-content">    };</span>
 </div>
           </div>
@@ -1125,6 +1037,7 @@
       </div>
       
       <div class="finding-group medium" data-severity="medium">
+        
         <div class="group-header">
           <div class="finding-left">
             <span class="severity-badge medium">
@@ -1136,8 +1049,7 @@
               MEDIUM
             </span>
             <div class="finding-title">
-              Catch block shows raw error message to user - may expose sensitive backend details
-              <span class="occurrence-count">4 occurrences</span>
+              console.log() logging Authentication Token: Failed to get push token for push notification!
               
             </div>
           </div>
@@ -1149,243 +1061,36 @@
         <div class="instances-container">
           <div class="instances-list">
             
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/app/(auth)/pairing.tsx</span>
-                <span class="line-number-badge">Line 43</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
       <div class="finding-content-inner">
         
-          <div class="finding-description">Catch block shows raw error message to user - may expose sensitive backend details</div>
-        
             
+        
+            <div class="finding-location">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            <span class="file-path">C:/Users/marco/couple-diary/services/notificationService.ts</span>
+            <span class="line-number-badge">Line 47</span>
+            </div>
         
             
         
             <div class="code-snippet">
             <div class="code-line ">
-  <span class="line-number">41</span>
-  <span class="line-content">            setPairingCode(code);</span>
-</div><div class="code-line ">
-  <span class="line-number">42</span>
-  <span class="line-content">            setMode(&#039;generate&#039;);</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">43</span>
-  <span class="line-content">        } catch (error: any) {</span>
-</div><div class="code-line ">
-  <span class="line-number">44</span>
-  <span class="line-content">            Alert.alert(&#039;Errore&#039;, error.message);</span>
-</div><div class="code-line ">
   <span class="line-number">45</span>
-  <span class="line-content">        } finally {</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Replace with user-friendly generic messages. Example: &quot;An error occurred. Please try again.&quot; Log details securely.</div>
-          </div>
-        
-      </div>
-    
-        </div>
-      </div>
-    
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/app/(auth)/pairing.tsx</span>
-                <span class="line-number-badge">Line 64</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
-      <div class="finding-content-inner">
-        
-          <div class="finding-description">Catch block shows raw error message to user - may expose sensitive backend details</div>
-        
-            
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">62</span>
-  <span class="line-content">            Alert.alert(&#039;Connesso! 💕&#039;, &#039;Ora siete collegati. Buona scrittura!&#039;);</span>
+  <span class="line-content"></span>
 </div><div class="code-line ">
-  <span class="line-number">63</span>
-  <span class="line-content">            router.replace(&#039;/(tabs)&#039;);</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">64</span>
-  <span class="line-content">        } catch (error: any) {</span>
-</div><div class="code-line ">
-  <span class="line-number">65</span>
-  <span class="line-content">            Alert.alert(&#039;Errore&#039;, error.message);</span>
-</div><div class="code-line ">
-  <span class="line-number">66</span>
-  <span class="line-content">        } finally {</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Replace with user-friendly generic messages. Example: &quot;An error occurred. Please try again.&quot; Log details securely.</div>
-          </div>
-        
-      </div>
-    
-        </div>
-      </div>
-    
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/app/(tabs)/profile.tsx</span>
-                <span class="line-number-badge">Line 40</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
-      <div class="finding-content-inner">
-        
-          <div class="finding-description">Catch block shows raw error message to user - may expose sensitive backend details</div>
-        
-            
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">38</span>
-  <span class="line-content">                setPairingCode(code);</span>
-</div><div class="code-line ">
-  <span class="line-number">39</span>
-  <span class="line-content">            }</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">40</span>
-  <span class="line-content">        } catch (error: any) {</span>
-</div><div class="code-line ">
-  <span class="line-number">41</span>
-  <span class="line-content">            Alert.alert(&#039;Errore&#039;, error.message);</span>
-</div><div class="code-line ">
-  <span class="line-number">42</span>
-  <span class="line-content">        } finally {</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Replace with user-friendly generic messages. Example: &quot;An error occurred. Please try again.&quot; Log details securely.</div>
-          </div>
-        
-      </div>
-    
-        </div>
-      </div>
-    
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/app/entry/[id].tsx</span>
-                <span class="line-number-badge">Line 48</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
-      <div class="finding-content-inner">
-        
-          <div class="finding-description">Catch block shows raw error message to user - may expose sensitive backend details</div>
-        
-            
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
   <span class="line-number">46</span>
-  <span class="line-content">            Alert.alert(&#039;💕&#039;, &#039;Cuore aggiunto!&#039;);</span>
-</div><div class="code-line ">
-  <span class="line-number">47</span>
-  <span class="line-content">            loadReactions();</span>
+  <span class="line-content">        if (finalStatus !== &#039;granted&#039;) {</span>
 </div><div class="code-line highlighted medium">
+  <span class="line-number">47</span>
+  <span class="line-content">            console.log(&#039;Failed to get push token for push notification!&#039;);</span>
+</div><div class="code-line ">
   <span class="line-number">48</span>
-  <span class="line-content">        } catch (error: any) {</span>
+  <span class="line-content">            return;</span>
 </div><div class="code-line ">
   <span class="line-number">49</span>
-  <span class="line-content">            Alert.alert(&#039;Errore&#039;, error.message);</span>
-</div><div class="code-line ">
-  <span class="line-number">50</span>
-  <span class="line-content">        } finally {</span>
+  <span class="line-content">        }</span>
 </div>
           </div>
         
@@ -1397,19 +1102,74 @@
               <div class="suggestion-title">
                 💡 Recommendation
               </div>
-            <div class="suggestion-text">Replace with user-friendly generic messages. Example: &quot;An error occurred. Please try again.&quot; Log details securely.</div>
+            <div class="suggestion-text">Remove console logs with sensitive data or wrap in __DEV__ check. Use a logging library with data filtering for production.</div>
           </div>
         
       </div>
     
+          </div>
         </div>
+      
+      </div>
+    
+      
+      <div class="finding-group low" data-severity="low">
+        
+        <div class="group-header">
+          <div class="finding-left">
+            <span class="severity-badge low">
+              <span class="severity-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </span>
+              LOW
+            </span>
+            <div class="finding-title">
+              Biometric authentication without proper fallback mechanism
+              
+            </div>
+          </div>
+          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+        
+        <div class="instances-container">
+          <div class="instances-list">
+            
+      <div class="finding-content-inner">
+        
+            
+        
+            <div class="finding-location">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            <span class="file-path">C:/Users/marco/couple-diary/app/_layout.tsx</span>
+            <span class="line-number-badge">Line 1</span>
+            </div>
+        
+            
+        
+        
+        
+            
+        
+            <div class="suggestion">
+              <div class="suggestion-title">
+                💡 Recommendation
+              </div>
+            <div class="suggestion-text">Implement secure fallback when biometrics fail: device passcode, secure keychain, or re-authentication.</div>
+          </div>
+        
       </div>
     
           </div>
         </div>
+      
       </div>
-      
-      
+    
     </div>
     
 

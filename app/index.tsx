@@ -1,7 +1,7 @@
 import { Redirect } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import React, { useEffect } from 'react';
 import { LandingPage } from '../components/web/LandingPage';
+import { checkIntegrity } from '../services/security';
 import { useAuthStore } from '../stores/authStore';
 
 /**
@@ -11,6 +11,10 @@ import { useAuthStore } from '../stores/authStore';
  */
 export default function Index() {
     const { isAuthenticated, isLoading } = useAuthStore();
+
+    useEffect(() => {
+        checkIntegrity();
+    }, []);
 
     // Show loading state
     if (isLoading) {
@@ -23,10 +27,10 @@ export default function Index() {
     }
 
     // Web: Show landing page
-    if (Platform.OS === 'web') {
+    if (process.env.EXPO_OS === 'web') {
         return <LandingPage />;
     }
 
-    // Mobile: Go to auth
-    return <Redirect href="/(auth)/login" />;
+    // Mobile: Start with Onboarding Flow
+    return <Redirect href={"/onboarding/welcome" as any} />;
 }

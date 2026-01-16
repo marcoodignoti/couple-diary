@@ -1,31 +1,40 @@
+import { Link } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import type { Entry, PartnerEntry } from '../types';
 import { MOODS } from '../utils/constants';
 import { formatDate, formatRelativeTime } from '../utils/dates';
-import { AnimatedPressable } from './ui/Animations';
 
 interface EntryCardProps {
     entry: Entry | PartnerEntry;
     isOwn?: boolean;
+    href?: string;
     onPress?: () => void;
+    onDelete?: () => void;
 }
 
-export function EntryCard({ entry, isOwn = false, onPress }: EntryCardProps) {
+export function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: EntryCardProps) {
     const moodData = entry.mood
         ? MOODS.find(m => m.id === entry.mood)
         : null;
 
-    return (
-        <AnimatedPressable
-            style={styles.container}
-            onPress={onPress}
-            disabled={!onPress}
-        >
+    const handleShare = async () => {
+        try {
+            await Share.share({
+                message: entry.content,
+                title: `Pensiero del ${formatDate(entry.created_at)}`,
+            });
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    };
+
+    const cardContent = (
+        <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.date}>{formatDate(entry.created_at)}</Text>
+                    <Text selectable style={styles.date}>{formatDate(entry.created_at)}</Text>
                     <Text style={styles.relativeTime}>
                         {formatRelativeTime(entry.created_at)}
                     </Text>
@@ -38,7 +47,7 @@ export function EntryCard({ entry, isOwn = false, onPress }: EntryCardProps) {
             </View>
 
             {/* Content preview */}
-            <Text style={styles.content} numberOfLines={4}>
+            <Text selectable style={styles.content} numberOfLines={4}>
                 {entry.content}
             </Text>
 
@@ -46,30 +55,79 @@ export function EntryCard({ entry, isOwn = false, onPress }: EntryCardProps) {
             <View style={styles.footer}>
                 {entry.is_special_date && (
                     <View style={styles.specialBadge}>
-                        <Text style={styles.specialText}>✨ Speciale</Text>
+                        <Text style={styles.specialText}>Speciale</Text>
                     </View>
                 )}
                 {!isOwn && (
                     <Text style={styles.authorHint}>
-                        Dal tuo amore 💕
+                        Dal tuo amore
                     </Text>
                 )}
             </View>
-        </AnimatedPressable>
+        </View>
     );
+
+    // If href is provided, use Link with Preview and Context Menu
+    if (href) {
+        return (
+            <Link href={href as any} asChild>
+                <Link.Trigger>
+                    <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
+                        {cardContent}
+                    </Pressable>
+                </Link.Trigger>
+                {isOwn && onDelete ? (
+                    <Link.Menu>
+                        <Link.MenuAction
+                            title="Condividi"
+                            icon="square.and.arrow.up"
+                            onPress={handleShare}
+                        />
+                        <Link.MenuAction
+                            title="Elimina"
+                            icon="trash"
+                            destructive
+                            onPress={onDelete}
+                        />
+                    </Link.Menu>
+                ) : (
+                    <Link.Menu>
+                        <Link.MenuAction
+                            title="Condividi"
+                            icon="square.and.arrow.up"
+                            onPress={handleShare}
+                        />
+                    </Link.Menu>
+                )}
+                <Link.Preview />
+            </Link>
+        );
+    }
+
+    // Fallback to simple pressable for backward compatibility
+    if (onPress) {
+        return (
+            <Pressable
+                onPress={onPress}
+                style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+            >
+                {cardContent}
+            </Pressable>
+        );
+    }
+
+    // Non-interactive card
+    return cardContent;
 }
 
 const styles = StyleSheet.create({
     container: {
         backgroundColor: 'rgba(255, 255, 255, 0.85)',
         borderRadius: 20,
+        borderCurve: 'continuous',
         padding: 20,
         marginVertical: 8,
-        shadowColor: '#E8B4B8',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 4,
+        boxShadow: '0px 4px 12px rgba(232, 180, 184, 0.15)',
     },
     header: {
         flexDirection: 'row',
@@ -91,6 +149,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(232, 180, 184, 0.2)',
         padding: 8,
         borderRadius: 12,
+        borderCurve: 'continuous',
     },
     moodEmoji: {
         fontSize: 28,

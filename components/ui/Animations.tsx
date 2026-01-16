@@ -1,7 +1,10 @@
 import * as Haptics from 'expo-haptics';
 import React from 'react';
-import { Platform, Pressable, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, ViewStyle } from 'react-native';
 import Animated, {
+    FadeInDown,
+    FadeOut,
+    LinearTransition,
     useAnimatedStyle,
     useSharedValue,
     withSpring,
@@ -32,7 +35,7 @@ export function AnimatedPressable({
     }));
 
     const triggerHaptic = () => {
-        if (Platform.OS === 'web' || hapticStyle === 'none') return;
+        if (process.env.EXPO_OS === 'web' || hapticStyle === 'none') return;
 
         switch (hapticStyle) {
             case 'light':
@@ -56,14 +59,29 @@ export function AnimatedPressable({
         scale.value = withSpring(1, { damping: 15, stiffness: 300 });
     };
 
+    const handleHoverIn = () => {
+        if (process.env.EXPO_OS === 'web' && !disabled) {
+            scale.value = withSpring(1.02, { damping: 15, stiffness: 300 });
+        }
+    };
+
+    const handleHoverOut = () => {
+        if (process.env.EXPO_OS === 'web') {
+            scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+        }
+    };
+
     return (
         <Pressable
             onPress={onPress}
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
+            //@ts-ignore - RNW props
+            onHoverIn={handleHoverIn}
+            onHoverOut={handleHoverOut}
             disabled={disabled}
         >
-            <Animated.View style={[style, animatedStyle]}>
+            <Animated.View style={StyleSheet.flatten([style, animatedStyle])}>
                 {children}
             </Animated.View>
         </Pressable>
@@ -104,4 +122,50 @@ export function FadeInView({ children, delay = 0, style }: FadeInViewProps) {
     );
 }
 
-export default { AnimatedPressable, FadeInView };
+interface StaggeredItemProps {
+    children: React.ReactNode;
+    index: number;
+    baseDelay?: number;
+    style?: ViewStyle;
+}
+
+/**
+ * List item with staggered enter/exit animations.
+ * Use inside an AnimatedList to create smooth staggered animations.
+ * Note: Layout animation is handled by the parent AnimatedList to avoid transform conflicts.
+ */
+export function StaggeredItem({
+    children,
+    index,
+    baseDelay = 50,
+    style,
+}: StaggeredItemProps) {
+    return (
+        <Animated.View
+            entering={FadeInDown.delay(index * baseDelay).duration(400)}
+            exiting={FadeOut.duration(200)}
+            style={style}
+        >
+            {children}
+        </Animated.View>
+    );
+}
+
+interface AnimatedListProps {
+    children: React.ReactNode;
+    style?: ViewStyle;
+}
+
+/**
+ * Container for animated lists with layout transitions.
+ * Wrap your list items with this to enable smooth reordering animations.
+ */
+export function AnimatedList({ children, style }: AnimatedListProps) {
+    return (
+        <Animated.View layout={LinearTransition} style={style}>
+            {children}
+        </Animated.View>
+    );
+}
+
+export default { AnimatedPressable, FadeInView, StaggeredItem, AnimatedList };

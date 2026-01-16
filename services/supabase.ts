@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
 
 // Supabase configuration
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
@@ -10,7 +9,7 @@ const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'your-ano
 const ExpoSecureStoreAdapter = {
     getItem: async (key: string): Promise<string | null> => {
         try {
-            if (Platform.OS === 'web') {
+            if (process.env.EXPO_OS === 'web') {
                 if (typeof window !== 'undefined' && window.localStorage) {
                     return window.localStorage.getItem(key);
                 }
@@ -23,7 +22,7 @@ const ExpoSecureStoreAdapter = {
     },
     setItem: async (key: string, value: string): Promise<void> => {
         try {
-            if (Platform.OS === 'web') {
+            if (process.env.EXPO_OS === 'web') {
                 if (typeof window !== 'undefined' && window.localStorage) {
                     window.localStorage.setItem(key, value);
                 }
@@ -36,7 +35,7 @@ const ExpoSecureStoreAdapter = {
     },
     removeItem: async (key: string): Promise<void> => {
         try {
-            if (Platform.OS === 'web') {
+            if (process.env.EXPO_OS === 'web') {
                 if (typeof window !== 'undefined' && window.localStorage) {
                     window.localStorage.removeItem(key);
                 }

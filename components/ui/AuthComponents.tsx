@@ -3,7 +3,6 @@ import React from 'react';
 import {
     ActivityIndicator,
     KeyboardAvoidingView,
-    Platform,
     Pressable,
     StyleSheet,
     Text,
@@ -73,7 +72,7 @@ export function AuthButton({
 
     const handlePressIn = () => {
         scale.value = withSpring(0.97, { damping: 15, stiffness: 400 });
-        if (Platform.OS !== 'web') {
+        if (process.env.EXPO_OS !== 'web') {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         }
     };
@@ -121,7 +120,7 @@ export function AuthContainer({ children, title, subtitle }: AuthContainerProps)
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'}
         >
             <View style={styles.content}>
                 <View style={styles.header}>

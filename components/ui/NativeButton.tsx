@@ -2,7 +2,6 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import {
     ActivityIndicator,
-    Platform,
     Pressable,
     StyleSheet,
     Text,
@@ -41,7 +40,7 @@ export function NativeButton({
     const scale = useSharedValue(1);
 
     const triggerHaptic = () => {
-        if (Platform.OS === 'web') return;
+        if (process.env.EXPO_OS === 'web') return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     };
 
@@ -107,6 +106,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 14,
+        borderCurve: 'continuous',
         gap: 8,
     },
     // Variants

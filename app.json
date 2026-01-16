@@ -40,10 +40,23 @@
       "startUrl": "/"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0331078e-0a7a-4909-8cfa-7bd7d9712341"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0331078e-0a7a-4909-8cfa-7bd7d9712341"
     }
   }
 }

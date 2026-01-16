@@ -1,88 +1,59 @@
 {
   "findings": [
     {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Backend error message or stack trace exposed to user",
+      "ruleId": "MISSING_RUNTIME_INTEGRITY_CHECKS",
+      "description": "Sensitive app without runtime integrity or tamper detection",
       "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/stores/authStore.ts",
-      "line": 86,
-      "snippet": "            }\r\n        } catch (error: any) {\r\n            console.error('Failed to refresh profile:', error.message);\r\n        }\r\n    },\r",
-      "suggestion": "Use generic error messages for users. Log detailed errors server-side only. Never expose stack traces or backend errors."
+      "filePath": "C:/Users/marco/couple-diary/app/index.tsx",
+      "line": 1,
+      "suggestion": "Implement runtime integrity checks: Play Integrity API (Android), App Attest (iOS), or signature verification to detect tampering."
     },
     {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Backend error message or stack trace exposed to user",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/stores/authStore.ts",
-      "line": 198,
-      "snippet": "            set({ partner });\r\n        } catch (error: any) {\r\n            console.error('Failed to fetch partner:', error.message);\r\n        }\r\n    },\r",
-      "suggestion": "Use generic error messages for users. Log detailed errors server-side only. Never expose stack traces or backend errors."
+      "ruleId": "IMPROPER_BIOMETRIC_FALLBACK",
+      "description": "Biometric authentication without proper fallback mechanism",
+      "severity": "LOW",
+      "filePath": "C:/Users/marco/couple-diary/app/_layout.tsx",
+      "line": 1,
+      "suggestion": "Implement secure fallback when biometrics fail: device passcode, secure keychain, or re-authentication."
     },
     {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Backend error message or stack trace exposed to user",
+      "ruleId": "SENSITIVE_LOGGING",
+      "description": "console.error() logging Sensitive Data: Authentication failed",
       "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/stores/entryStore.ts",
-      "line": 91,
-      "snippet": "            set({ timeCapsuleEntry: data || null });\r\n        } catch (error: any) {\r\n            console.error('Time capsule fetch error:', error.message);\r\n        }\r\n    },\r",
-      "suggestion": "Use generic error messages for users. Log detailed errors server-side only. Never expose stack traces or backend errors."
-    },
-    {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Error object logged directly - may contain sensitive data or stack traces",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/app/(auth)/pairing.tsx",
-      "line": 31,
-      "snippet": "            }\r\n        } catch (error) {\r\n            console.error('Error checking existing code:', error);\r\n        }\r\n    };\r",
-      "suggestion": "Log only safe error properties (message, code). Sanitize error messages before displaying to users. Never expose stack traces in production."
-    },
-    {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Catch block shows raw error message to user - may expose sensitive backend details",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/app/(auth)/pairing.tsx",
-      "line": 43,
-      "snippet": "            setPairingCode(code);\r\n            setMode('generate');\r\n        } catch (error: any) {\r\n            Alert.alert('Errore', error.message);\r\n        } finally {\r",
-      "suggestion": "Replace with user-friendly generic messages. Example: \"An error occurred. Please try again.\" Log details securely."
-    },
-    {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Catch block shows raw error message to user - may expose sensitive backend details",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/app/(auth)/pairing.tsx",
-      "line": 64,
-      "snippet": "            Alert.alert('Connesso! 💕', 'Ora siete collegati. Buona scrittura!');\r\n            router.replace('/(tabs)');\r\n        } catch (error: any) {\r\n            Alert.alert('Errore', error.message);\r\n        } finally {\r",
-      "suggestion": "Replace with user-friendly generic messages. Example: \"An error occurred. Please try again.\" Log details securely."
-    },
-    {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Catch block shows raw error message to user - may expose sensitive backend details",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/app/(tabs)/profile.tsx",
-      "line": 40,
-      "snippet": "                setPairingCode(code);\r\n            }\r\n        } catch (error: any) {\r\n            Alert.alert('Errore', error.message);\r\n        } finally {\r",
-      "suggestion": "Replace with user-friendly generic messages. Example: \"An error occurred. Please try again.\" Log details securely."
+      "filePath": "C:/Users/marco/couple-diary/services/biometricService.ts",
+      "line": 22,
+      "snippet": "        return result.success;\r\n    } catch (error) {\r\n        console.error('Authentication failed', error);\r\n        return false;\r\n    }\r",
+      "suggestion": "Remove console logs with sensitive data or wrap in __DEV__ check. Use a logging library with data filtering for production."
     },
     {
       "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
       "description": "Error object logged directly - may contain sensitive data or stack traces",
       "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/app/entry/[id].tsx",
-      "line": 36,
-      "snippet": "            setReactions(data);\r\n        } catch (error) {\r\n            console.error('Failed to load reactions:', error);\r\n        }\r\n    };\r",
+      "filePath": "C:/Users/marco/couple-diary/services/biometricService.ts",
+      "line": 22,
+      "snippet": "        return result.success;\r\n    } catch (error) {\r\n        console.error('Authentication failed', error);\r\n        return false;\r\n    }\r",
       "suggestion": "Log only safe error properties (message, code). Sanitize error messages before displaying to users. Never expose stack traces in production."
     },
     {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Catch block shows raw error message to user - may expose sensitive backend details",
+      "ruleId": "SENSITIVE_LOGGING",
+      "description": "console.log() logging Authentication Token: Failed to get push token for push notification!",
       "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/app/entry/[id].tsx",
-      "line": 48,
-      "snippet": "            Alert.alert('💕', 'Cuore aggiunto!');\r\n            loadReactions();\r\n        } catch (error: any) {\r\n            Alert.alert('Errore', error.message);\r\n        } finally {\r",
-      "suggestion": "Replace with user-friendly generic messages. Example: \"An error occurred. Please try again.\" Log details securely."
+      "filePath": "C:/Users/marco/couple-diary/services/notificationService.ts",
+      "line": 47,
+      "snippet": "\r\n        if (finalStatus !== 'granted') {\r\n            console.log('Failed to get push token for push notification!');\r\n            return;\r\n        }\r",
+      "suggestion": "Remove console logs with sensitive data or wrap in __DEV__ check. Use a logging library with data filtering for production."
+    },
+    {
+      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
+      "description": "Error object logged directly - may contain sensitive data or stack traces",
+      "severity": "MEDIUM",
+      "filePath": "C:/Users/marco/couple-diary/app/(tabs)/insight.tsx",
+      "line": 68,
+      "snippet": "            alert(`Reazione inviata: ${emoji}`);\r\n        } catch (error) {\r\n            console.error('Failed to react:', error);\r\n        }\r\n    };\r",
+      "suggestion": "Log only safe error properties (message, code). Sanitize error messages before displaying to users. Never expose stack traces in production."
     }
   ],
-  "scannedFiles": 45,
-  "duration": 904,
-  "timestamp": "2026-01-14T13:03:02.669Z"
+  "scannedFiles": 72,
+  "duration": 1928,
+  "timestamp": "2026-01-16T12:26:34.380Z"
 }

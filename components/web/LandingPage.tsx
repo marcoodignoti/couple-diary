@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
+import Head from 'expo-router/head';
 import React from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 /**
  * Landing page for web version
@@ -8,138 +9,147 @@ import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from '
  */
 export function LandingPage() {
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            {/* Hero Section */}
-            <View style={styles.hero}>
-                <Text style={styles.emoji}>💕</Text>
-                <Text style={styles.title}>Couple Diary</Text>
-                <Text style={styles.subtitle}>
-                    Un diario intimo per coppie a distanza
-                </Text>
-                <Text style={styles.description}>
-                    Scrivi ogni giorno i tuoi pensieri per il tuo amore.{'\n'}
-                    Scopriteli insieme ogni domenica. ✨
-                </Text>
+        <>
+            <Head>
+                <title>Couple Diary - Diario di Coppia a Distanza</title>
+                <meta name="description" content="Un diario intimo per coppie a distanza. Scrivi ogni giorno, scopri i pensieri del partner la domenica." />
+                <meta property="og:title" content="Couple Diary - Diario Condiviso" />
+                <meta property="og:description" content="Il modo più dolce per sentirsi vicini anche quando si è lontani." />
+                <meta property="og:image" content="/assets/images/icon.png" />
+            </Head>
+            <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+                {/* Hero Section */}
+                <View style={styles.hero}>
+                    <Text style={styles.emoji}>💕</Text>
+                    <Text style={styles.title}>Couple Diary</Text>
+                    <Text style={styles.subtitle}>
+                        Un diario intimo per coppie a distanza
+                    </Text>
+                    <Text style={styles.description}>
+                        Scrivi ogni giorno i tuoi pensieri per il tuo amore.{'\n'}
+                        Scopriteli insieme ogni domenica. ✨
+                    </Text>
 
-                <View style={styles.ctaContainer}>
+                    <View style={styles.ctaContainer}>
+                        <TouchableOpacity
+                            style={styles.primaryButton}
+                            onPress={() => router.push('/(auth)/register')}
+                        >
+                            <Text style={styles.primaryButtonText}>Inizia Gratis</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.secondaryButton}
+                            onPress={() => router.push('/(auth)/login')}
+                        >
+                            <Text style={styles.secondaryButtonText}>Accedi</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Features Section */}
+                <View style={styles.features}>
+                    <Text style={styles.sectionTitle}>Come Funziona</Text>
+
+                    <View style={styles.featureGrid}>
+                        <View style={styles.featureCard}>
+                            <Text style={styles.featureEmoji}>✍️</Text>
+                            <Text style={styles.featureTitle}>Scrivi Ogni Giorno</Text>
+                            <Text style={styles.featureText}>
+                                Condividi i tuoi pensieri, ricordi e momenti speciali
+                            </Text>
+                        </View>
+
+                        <View style={styles.featureCard}>
+                            <Text style={styles.featureEmoji}>🌫️</Text>
+                            <Text style={styles.featureTitle}>Effetto Nebbia</Text>
+                            <Text style={styles.featureText}>
+                                Le voci del partner sono offuscate durante la settimana
+                            </Text>
+                        </View>
+
+                        <View style={styles.featureCard}>
+                            <Text style={styles.featureEmoji}>🎁</Text>
+                            <Text style={styles.featureTitle}>Rivelazione Domenicale</Text>
+                            <Text style={styles.featureText}>
+                                Ogni domenica si sbloccano le voci della settimana
+                            </Text>
+                        </View>
+
+                        <View style={styles.featureCard}>
+                            <Text style={styles.featureEmoji}>💌</Text>
+                            <Text style={styles.featureTitle}>Reazioni</Text>
+                            <Text style={styles.featureText}>
+                                Lascia cuori e commenti sulle voci del tuo amore
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* How It Works */}
+                <View style={styles.howItWorks}>
+                    <Text style={styles.sectionTitle}>Un'Esperienza Unica</Text>
+                    <View style={styles.stepsList}>
+                        <View style={styles.step}>
+                            <View style={styles.stepNumber}>
+                                <Text style={styles.stepNumberText}>1</Text>
+                            </View>
+                            <View style={styles.stepContent}>
+                                <Text style={styles.stepTitle}>Collegati al Partner</Text>
+                                <Text style={styles.stepText}>
+                                    Condividi un codice segreto per collegare i vostri diari
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.step}>
+                            <View style={styles.stepNumber}>
+                                <Text style={styles.stepNumberText}>2</Text>
+                            </View>
+                            <View style={styles.stepContent}>
+                                <Text style={styles.stepTitle}>Scrivi Liberamente</Text>
+                                <Text style={styles.stepText}>
+                                    Racconta la tua giornata, i tuoi pensieri, le tue emozioni
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.step}>
+                            <View style={styles.stepNumber}>
+                                <Text style={styles.stepNumberText}>3</Text>
+                            </View>
+                            <View style={styles.stepContent}>
+                                <Text style={styles.stepTitle}>Attendi la Domenica</Text>
+                                <Text style={styles.stepText}>
+                                    Leggete insieme le voci della settimana
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Footer CTA */}
+                <View style={styles.footerCta}>
+                    <Text style={styles.footerTitle}>Pronto a iniziare?</Text>
+                    <Text style={styles.footerText}>
+                        Unisciti a Couple Diary e rendi speciale ogni giorno
+                    </Text>
                     <TouchableOpacity
                         style={styles.primaryButton}
                         onPress={() => router.push('/(auth)/register')}
                     >
-                        <Text style={styles.primaryButtonText}>Inizia Gratis</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={() => router.push('/(auth)/login')}
-                    >
-                        <Text style={styles.secondaryButtonText}>Accedi</Text>
+                        <Text style={styles.primaryButtonText}>Crea il Tuo Diario</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
 
-            {/* Features Section */}
-            <View style={styles.features}>
-                <Text style={styles.sectionTitle}>Come Funziona</Text>
-
-                <View style={styles.featureGrid}>
-                    <View style={styles.featureCard}>
-                        <Text style={styles.featureEmoji}>✍️</Text>
-                        <Text style={styles.featureTitle}>Scrivi Ogni Giorno</Text>
-                        <Text style={styles.featureText}>
-                            Condividi i tuoi pensieri, ricordi e momenti speciali
-                        </Text>
-                    </View>
-
-                    <View style={styles.featureCard}>
-                        <Text style={styles.featureEmoji}>🌫️</Text>
-                        <Text style={styles.featureTitle}>Effetto Nebbia</Text>
-                        <Text style={styles.featureText}>
-                            Le voci del partner sono offuscate durante la settimana
-                        </Text>
-                    </View>
-
-                    <View style={styles.featureCard}>
-                        <Text style={styles.featureEmoji}>🎁</Text>
-                        <Text style={styles.featureTitle}>Rivelazione Domenicale</Text>
-                        <Text style={styles.featureText}>
-                            Ogni domenica si sbloccano le voci della settimana
-                        </Text>
-                    </View>
-
-                    <View style={styles.featureCard}>
-                        <Text style={styles.featureEmoji}>💌</Text>
-                        <Text style={styles.featureTitle}>Reazioni</Text>
-                        <Text style={styles.featureText}>
-                            Lascia cuori e commenti sulle voci del tuo amore
-                        </Text>
-                    </View>
+                {/* Footer */}
+                <View style={styles.footer}>
+                    <Text style={styles.footerLink}>💕 Couple Diary</Text>
+                    <Text style={styles.copyright}>
+                        Fatto con amore • {new Date().getFullYear()}
+                    </Text>
                 </View>
-            </View>
-
-            {/* How It Works */}
-            <View style={styles.howItWorks}>
-                <Text style={styles.sectionTitle}>Un'Esperienza Unica</Text>
-                <View style={styles.stepsList}>
-                    <View style={styles.step}>
-                        <View style={styles.stepNumber}>
-                            <Text style={styles.stepNumberText}>1</Text>
-                        </View>
-                        <View style={styles.stepContent}>
-                            <Text style={styles.stepTitle}>Collegati al Partner</Text>
-                            <Text style={styles.stepText}>
-                                Condividi un codice segreto per collegare i vostri diari
-                            </Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.step}>
-                        <View style={styles.stepNumber}>
-                            <Text style={styles.stepNumberText}>2</Text>
-                        </View>
-                        <View style={styles.stepContent}>
-                            <Text style={styles.stepTitle}>Scrivi Liberamente</Text>
-                            <Text style={styles.stepText}>
-                                Racconta la tua giornata, i tuoi pensieri, le tue emozioni
-                            </Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.step}>
-                        <View style={styles.stepNumber}>
-                            <Text style={styles.stepNumberText}>3</Text>
-                        </View>
-                        <View style={styles.stepContent}>
-                            <Text style={styles.stepTitle}>Attendi la Domenica</Text>
-                            <Text style={styles.stepText}>
-                                Leggete insieme le voci della settimana
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-            </View>
-
-            {/* Footer CTA */}
-            <View style={styles.footerCta}>
-                <Text style={styles.footerTitle}>Pronto a iniziare?</Text>
-                <Text style={styles.footerText}>
-                    Unisciti a Couple Diary e rendi speciale ogni giorno
-                </Text>
-                <TouchableOpacity
-                    style={styles.primaryButton}
-                    onPress={() => router.push('/(auth)/register')}
-                >
-                    <Text style={styles.primaryButtonText}>Crea il Tuo Diario</Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Footer */}
-            <View style={styles.footer}>
-                <Text style={styles.footerLink}>💕 Couple Diary</Text>
-                <Text style={styles.copyright}>
-                    Fatto con amore • {new Date().getFullYear()}
-                </Text>
-            </View>
-        </ScrollView>
+            </ScrollView>
+        </>
     );
 }
 
@@ -185,7 +195,7 @@ const styles = StyleSheet.create({
         marginBottom: 40,
     },
     ctaContainer: {
-        flexDirection: Platform.OS === 'web' ? 'row' : 'column',
+        flexDirection: process.env.EXPO_OS === 'web' ? 'row' : 'column',
         gap: 16,
     },
     primaryButton: {
@@ -193,11 +203,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 32,
         paddingVertical: 18,
         borderRadius: 16,
-        shadowColor: '#E8B4B8',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        elevation: 4,
+        boxShadow: '0px 4px 12px rgba(232, 180, 184, 0.3)',
     },
     primaryButtonText: {
         color: '#FFF',
@@ -244,7 +250,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FAF9F6',
         borderRadius: 20,
         padding: 32,
-        width: Platform.OS === 'web' ? 400 : '100%',
+        width: process.env.EXPO_OS === 'web' ? 400 : '100%',
         maxWidth: 400,
         alignItems: 'center',
     },
