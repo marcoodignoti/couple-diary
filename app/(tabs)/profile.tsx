@@ -75,7 +75,7 @@ export default function ProfileScreen() {
                     style: 'destructive',
                     onPress: async () => {
                         await signOut();
-                        router.replace('/(auth)/login' as any);
+                        router.replace('/onboarding/welcome' as any);
                     }
                 },
             ]

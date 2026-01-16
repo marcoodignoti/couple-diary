@@ -32,15 +32,16 @@ export function getUnlockDate(isSpecialDate: boolean, specialDate?: Date): Date 
 
 /**
  * Check if an entry is unlocked based on its unlock date
+ * Compares strictly by calendar date (UTC) to avoid timezone offsets
  */
 export function isEntryUnlocked(unlockDateStr: string): boolean {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const unlockDate = new Date(unlockDateStr); // Parsed as UTC midnight
 
-    const unlockDate = new Date(unlockDateStr);
-    unlockDate.setHours(0, 0, 0, 0);
+    const now = new Date();
+    // Create UTC midnight for today to compare apples to apples
+    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 
-    return today >= unlockDate;
+    return todayUTC >= unlockDate;
 }
 
 /**
@@ -105,7 +106,11 @@ export function isOneYearAgo(dateStr: string): boolean {
 
 /**
  * Get ISO date string (YYYY-MM-DD) for database queries
+ * Uses local date components to avoid UTC shift
  */
 export function toISODateString(date: Date): string {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }

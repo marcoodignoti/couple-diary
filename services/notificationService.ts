@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { storage } from '../utils/storage';
 
 const NOTIFICATION_PREF_KEY = 'couple_diary_notifications_enabled';
 
@@ -61,28 +61,19 @@ export async function registerForPushNotificationsAsync() {
  * Get notification preference (default true)
  */
 export async function getNotificationPreference(): Promise<boolean> {
-    try {
-        const value = await AsyncStorage.getItem(NOTIFICATION_PREF_KEY);
-        return value !== 'false'; // Default to true if null
-    } catch (e) {
-        return true;
-    }
+    return storage.get<boolean>(NOTIFICATION_PREF_KEY, true);
 }
 
 /**
  * Set notification preference
  */
 export async function setNotificationPreference(enabled: boolean): Promise<void> {
-    try {
-        await AsyncStorage.setItem(NOTIFICATION_PREF_KEY, String(enabled));
+    storage.set(NOTIFICATION_PREF_KEY, enabled);
 
-        if (enabled) {
-            await scheduleAllNotifications();
-        } else {
-            await cancelAllNotifications();
-        }
-    } catch (e) {
-        console.error('Failed to save notification preference', e);
+    if (enabled) {
+        await scheduleAllNotifications();
+    } else {
+        await cancelAllNotifications();
     }
 }
 

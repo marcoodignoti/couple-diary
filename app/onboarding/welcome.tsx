@@ -1,209 +1,205 @@
-import { Icon } from '../../components/ui/Icon';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View, ViewStyle, TextStyle } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import React, { useCallback, useState } from 'react';
+import { StatusBar, StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '../../hooks/useTheme';
-import { Colors, BorderRadius, FontSizes, Spacing, Shadows } from '../../constants/theme';
+import { LoginScreen } from '../../components/onboarding/LoginScreen';
+import { OnboardingSlide } from '../../components/onboarding/OnboardingSlide';
+import { Icon } from '../../components/ui/Icon';
+import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
+
+// Full Italian translations from LanguageContext via implementation plan 
+const ONBOARDING_DATA = [
+    {
+        title: "La Distanza",
+        description: "Quando l'amore supera i chilometri. Scrivi messaggi segreti al tuo partner, anche quando siete lontani. Un ponte digitale tra i vostri cuori.",
+        image: require('../../assets/images/onboarding-distance.png'),
+    },
+    {
+        title: "Il Diario Segreto",
+        description: "Scrivi i tuoi pensieri più intimi. I messaggi restano nascosti nella nebbia fino al momento perfetto. Solo voi due saprete cosa contengono.",
+        image: require('../../assets/images/onboarding-diary.png'),
+    },
+    {
+        title: "La Domenica",
+        description: "Ogni domenica, la magia si svela. I messaggi segreti vengono rivelati insieme, creando momenti speciali da condividere.",
+        image: require('../../assets/images/onboarding-reveal.png'),
+    },
+    {
+        title: "Giorni Speciali",
+        description: "Programma sorprese per compleanni, anniversari e momenti importanti. I tuoi messaggi appariranno esattamente quando vuoi tu.",
+        image: require('../../assets/images/onboarding-calendar.png'),
+    },
+];
 
 export default function WelcomeScreen() {
     const router = useRouter();
-    const { isDark, colors } = useTheme();
+    const [currentScreen, setCurrentScreen] = useState(0);
+    const [direction, setDirection] = useState<'left' | 'right' | 'none'>('none');
+
+    const totalScreens = ONBOARDING_DATA.length + 1; // Slides + Login Screen
+    const isLoginScreen = currentScreen === ONBOARDING_DATA.length;
+
+    const handleNext = useCallback(() => {
+        if (currentScreen < totalScreens - 1) {
+            setDirection('left');
+            Haptics.selectionAsync();
+            setCurrentScreen(prev => prev + 1);
+        }
+    }, [currentScreen, totalScreens]);
+
+    const handleBack = useCallback(() => {
+        if (currentScreen > 0) {
+            setDirection('right');
+            Haptics.selectionAsync();
+            setCurrentScreen(prev => prev - 1);
+        }
+    }, [currentScreen]);
+
+    const handleSkip = useCallback(() => {
+        setDirection('left');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        setCurrentScreen(totalScreens - 1); // Go to login
+    }, [totalScreens]);
 
     return (
-        <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{ flex: 1, backgroundColor: colors.background }}
-            contentContainerStyle={{ flexGrow: 1 }}
-        >
-            <View style={styles.container}>
-                {/* Background Decorative Elements */}
-                <View style={[styles.decorativeCircle1, { backgroundColor: `${Colors.primary.DEFAULT}1A` }]} />
-                <View style={[styles.decorativeCircle2, { backgroundColor: `${Colors.primary.DEFAULT}0D` }]} />
+        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+            <StatusBar barStyle="dark-content" />
 
-                {/* Hero Illustration Area */}
-                <Animated.View
-                    entering={FadeIn.duration(1000)}
-                    style={styles.heroContainer}
-                >
-                    <View style={styles.heartContainer}>
-                        {/* Abstract Heart Glow */}
-                        <View style={[styles.heartGlow, { backgroundColor: `${Colors.primary.DEFAULT}33` }]} />
+            {/* Slides Container */}
+            <View style={styles.slidesContainer}>
+                {ONBOARDING_DATA.map((slide, index) => (
+                    <OnboardingSlide
+                        key={index}
+                        index={index}
+                        title={slide.title}
+                        description={slide.description}
+                        image={slide.image}
+                        isActive={currentScreen === index}
+                        direction={currentScreen > index ? 'left' : currentScreen < index ? 'right' : 'none'}
+                    />
+                ))}
 
-                        {/* Main Heart Icon */}
-                        <View style={styles.iconContainer}>
-                            <Icon name="favorite" size={160} color={Colors.primary.DEFAULT} />
-
-                            {/* Floating Elements */}
-                            <Animated.View
-                                entering={FadeInDown.delay(500).springify()}
-                                style={styles.floatingHeart1}
-                            >
-                                <Icon name="favorite" size={32} color={`${Colors.primary.DEFAULT}99`} />
-                            </Animated.View>
-                            <Animated.View
-                                entering={FadeInDown.delay(700).springify()}
-                                style={styles.floatingHeart2}
-                            >
-                                <Icon name="favorite" size={24} color={`${Colors.primary.DEFAULT}66`} />
-                            </Animated.View>
-                        </View>
-                    </View>
-                </Animated.View>
-
-                {/* Text Content */}
-                <Animated.View
-                    entering={FadeInDown.delay(300).duration(800)}
-                    style={styles.textContainer}
-                >
-                    <Text
-                        selectable
-                        style={[
-                            styles.title,
-                            { color: isDark ? Colors.white : Colors.text.light }
-                        ]}
-                    >
-                        Uno Spazio per Due
-                    </Text>
-                    <Text
-                        selectable
-                        style={[
-                            styles.subtitle,
-                            { color: isDark ? Colors.stone[400] : `${Colors.text.light}B3` }
-                        ]}
-                    >
-                        Condividi i tuoi pensieri ogni giorno, e riscopri il tuo partner ogni Domenica.
-                    </Text>
-                </Animated.View>
-
-                {/* Action Button */}
-                <Animated.View
-                    entering={FadeInDown.delay(600).duration(800)}
-                    style={styles.buttonContainer}
-                >
-                    <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={() => router.push('/onboarding/secret')}
-                        style={[
-                            styles.button,
-                            {
-                                backgroundColor: isDark ? Colors.primary.dark : Colors.primary.DEFAULT,
-                                boxShadow: `0px 10px 30px ${Colors.primary.DEFAULT}4D`,
-                            } as ViewStyle
-                        ]}
-                    >
-                        <Text style={styles.buttonText}>
-                            Inizia Ora
-                        </Text>
-                    </TouchableOpacity>
-                </Animated.View>
+                {/* Login Screen Overlay */}
+                <LoginScreen isActive={isLoginScreen} />
             </View>
-        </ScrollView>
+
+            {/* Navigation Controls (Hidden on Login Screen) */}
+            {!isLoginScreen && (
+                <View style={styles.navigationContainer}>
+                    {/* Progress Dots */}
+                    <View style={styles.dotsContainer}>
+                        {Array.from({ length: totalScreens }).map((_, index) => (
+                            <View
+                                key={index}
+                                style={[
+                                    styles.dot,
+                                    currentScreen === index ? styles.activeDot : styles.inactiveDot
+                                ]}
+                            />
+                        ))}
+                    </View>
+
+                    {/* Bottom Buttons */}
+                    <View style={styles.buttonsRow}>
+                        {/* Left Button (Skip or Back) */}
+                        {currentScreen === 0 ? (
+                            <TouchableOpacity onPress={handleSkip} style={styles.textButton}>
+                                <Text style={styles.textButtonLabel}>Salta</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity onPress={handleBack} style={styles.textButton}>
+                                <Icon name="chevron-left" size={24} color={Colors.stone[400]} />
+                                <Text style={styles.textButtonLabel}>Indietro</Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {/* Right Button (Next or Inizia) */}
+                        <TouchableOpacity
+                            onPress={handleNext}
+                            style={styles.primaryButton}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.primaryButtonText}>
+                                {currentScreen === ONBOARDING_DATA.length - 1 ? 'Inizia' : 'Avanti'}
+                            </Text>
+                            <Icon name="chevron-right" size={20} color={Colors.white} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+        </SafeAreaView>
     );
 }
 
-const styles = {
+const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        padding: Spacing[6],
+        backgroundColor: Colors.background.light,
     } as ViewStyle,
-    decorativeCircle1: {
-        position: 'absolute',
-        top: -80,
-        right: -80,
-        width: 256,
-        height: 256,
-        borderRadius: BorderRadius.full,
-    } as ViewStyle,
-    decorativeCircle2: {
-        position: 'absolute',
-        top: '33%',
-        left: -80,
-        width: 320,
-        height: 320,
-        borderRadius: BorderRadius.full,
-    } as ViewStyle,
-    heroContainer: {
+    slidesContainer: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        minHeight: 300,
-    } as ViewStyle,
-    heartContainer: {
         position: 'relative',
-        width: 240,
-        height: 240,
-        alignItems: 'center',
+        // Make sure slides take full space
+    } as ViewStyle,
+    navigationContainer: {
+        paddingHorizontal: Spacing[6],
+        paddingBottom: Spacing[4],
+        backgroundColor: 'transparent',
+    } as ViewStyle,
+    dotsContainer: {
+        flexDirection: 'row',
         justifyContent: 'center',
+        marginBottom: Spacing[6],
+        gap: Spacing[2],
     } as ViewStyle,
-    heartGlow: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        borderRadius: BorderRadius.full,
+    dot: {
+        height: 8,
+        borderRadius: 4,
     } as ViewStyle,
-    iconContainer: {
-        position: 'relative',
-        zIndex: 10,
+    activeDot: {
+        width: 24,
+        backgroundColor: Colors.primary.DEFAULT,
+    } as ViewStyle,
+    inactiveDot: {
+        width: 8,
+        backgroundColor: Colors.stone[300],
+    } as ViewStyle,
+    buttonsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        justifyContent: 'center',
     } as ViewStyle,
-    floatingHeart1: {
-        position: 'absolute',
-        top: -8,
-        right: 16,
-        transform: [{ rotate: '12deg' }],
-    } as ViewStyle,
-    floatingHeart2: {
-        position: 'absolute',
-        bottom: 16,
-        left: -8,
-        transform: [{ rotate: '-12deg' }],
-    } as ViewStyle,
-    textContainer: {
-        width: '100%',
+    textButton: {
+        flexDirection: 'row',
         alignItems: 'center',
-        gap: Spacing[4],
-        marginBottom: Spacing[12],
+        padding: Spacing[2],
     } as ViewStyle,
-    title: {
-        fontSize: FontSizes['4xl'],
-        fontWeight: '700',
-        letterSpacing: -0.5,
-        lineHeight: FontSizes['4xl'] * 1.1,
-        textAlign: 'center',
-    } as TextStyle,
-    subtitle: {
-        fontSize: FontSizes.lg,
+    textButtonLabel: {
+        fontSize: FontSizes.base,
+        color: Colors.stone[500],
         fontWeight: '500',
-        lineHeight: FontSizes.lg * 1.625,
-        textAlign: 'center',
-        maxWidth: 280,
     } as TextStyle,
-    buttonContainer: {
-        width: '100%',
-        paddingBottom: Spacing[8],
-    } as ViewStyle,
-    button: {
-        width: '100%',
-        height: 56,
-        borderRadius: BorderRadius.full,
-        borderCurve: 'continuous',
+    primaryButton: {
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor: Colors.primary.DEFAULT,
+        paddingHorizontal: Spacing[6],
+        paddingVertical: 12, // Custom height for consistency
+        borderRadius: BorderRadius.full,
+        gap: Spacing[1],
+        shadowColor: Colors.primary.DEFAULT,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
     } as ViewStyle,
-    buttonText: {
+    primaryButtonText: {
         color: Colors.white,
         fontSize: FontSizes.lg,
-        fontWeight: '700',
-        letterSpacing: 0.5,
+        fontWeight: 'bold',
+        marginLeft: Spacing[1],
     } as TextStyle,
-};
+});

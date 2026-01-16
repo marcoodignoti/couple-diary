@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { storage } from '../utils/storage';
 
 const PRIVACY_LOCK_KEY = 'couple_diary_privacy_lock_enabled';
 
@@ -25,18 +25,9 @@ export async function authenticate(): Promise<boolean> {
 }
 
 export async function setPrivacyLockPreference(enabled: boolean): Promise<void> {
-    try {
-        await AsyncStorage.setItem(PRIVACY_LOCK_KEY, String(enabled));
-    } catch (e) {
-        console.error('Failed to save privacy lock preference', e);
-    }
+    storage.set(PRIVACY_LOCK_KEY, enabled);
 }
 
 export async function getPrivacyLockPreference(): Promise<boolean> {
-    try {
-        const value = await AsyncStorage.getItem(PRIVACY_LOCK_KEY);
-        return value === 'true';
-    } catch (e) {
-        return false;
-    }
+    return storage.get<boolean>(PRIVACY_LOCK_KEY, false);
 }
