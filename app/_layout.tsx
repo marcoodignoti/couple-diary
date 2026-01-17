@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AppState, LogBox, Text, TextStyle, TouchableOpacity, useColorScheme, View, ViewStyle } from 'react-native';
 
 import { Icon } from '../components/ui/Icon';
+import { UpdateLoader } from '../components/UpdateLoader';
 import Colors from '../constants/Colors';
 import { BorderRadius, FontSizes, Spacing, Colors as ThemeColors } from '../constants/theme';
 import { QueryProvider } from '../providers/QueryProvider';
@@ -34,6 +35,11 @@ LogBox.ignoreLogs([
   /Notification channel setup failed/
 ]);
 
+
+
+
+// ... (existing imports)
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -44,6 +50,7 @@ export default function RootLayout() {
 
   const { initialize, isLoading: authLoading } = useAuthStore();
   const [isLocked, setIsLocked] = useState(false);
+  const [isCheckingUpdates, setIsCheckingUpdates] = useState(true);
   const appState = useRef(AppState.currentState);
   const isAuthenticating = useRef(false);
 
@@ -129,12 +136,16 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded && !authLoading) {
+    if (loaded && !authLoading && !isCheckingUpdates) {
       SplashScreen.hideAsync().catch(() => {
         // Ignore error - splash screen may not be registered in Expo Go
       });
     }
-  }, [loaded, authLoading]);
+  }, [loaded, authLoading, isCheckingUpdates]);
+
+  if (isCheckingUpdates) {
+    return <UpdateLoader onFinish={() => setIsCheckingUpdates(false)} />;
+  }
 
   if (!loaded || authLoading) {
     return null;
