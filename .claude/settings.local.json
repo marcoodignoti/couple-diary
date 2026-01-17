@@ -14,7 +14,9 @@
       "Bash(ls:*)",
       "Bash(npx tsc:*)",
       "Skill(expo-app-design:api-routes)",
-      "Skill(expo-app-design:data-fetching)"
+      "Skill(expo-app-design:data-fetching)",
+      "Bash(where:*)",
+      "Bash(npx expo-doctor:*)"
     ]
   }
 }

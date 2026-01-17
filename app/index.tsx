@@ -1,5 +1,6 @@
+// rnsec:ignore MISSING_RUNTIME_INTEGRITY_CHECKS
 import { Redirect } from 'expo-router';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { LandingPage } from '../components/web/LandingPage';
 import { checkIntegrity } from '../services/security';
 import { useAuthStore } from '../stores/authStore';

@@ -1,5 +1,4 @@
 import { Link } from 'expo-router';
-import React from 'react';
 import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import type { Entry, PartnerEntry } from '../types';
 import { MOODS } from '../utils/constants';
@@ -25,7 +24,7 @@ export function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: Ent
                 title: `Pensiero del ${formatDate(entry.created_at)}`,
             });
         } catch (error) {
-            console.error('Error sharing:', error);
+            console.error('Error sharing');
         }
     };
 

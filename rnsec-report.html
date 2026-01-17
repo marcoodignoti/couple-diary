@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>React Native Security Report - 16/01/2026</title>
+  <title>React Native Security Report - 17/01/2026</title>
   <style>
     * {
       margin: 0;
@@ -703,7 +703,7 @@
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
-      <span>Scan completed in <span class="scan-status-text">1.9s</span> <span class="divider">•</span> <span class="scan-status-text">72 files analyzed</span></span>
+      <span>Scan completed in <span class="scan-status-text">2.3s</span> <span class="divider">•</span> <span class="scan-status-text">79 files analyzed</span></span>
     </div>
 
     <div class="header">
@@ -719,13 +719,13 @@
         </div>
       </div>
       <div class="header-info">
-        <div class="info-item">Jan 16, 2026 • 1:26 PM</div>
+        <div class="info-item">Jan 17, 2026 • 2:09 AM</div>
       </div>
     </div>
     
     <div class="summary">
       <div class="summary-card total active" onclick="filterBySeverity('all')" data-filter="all">
-        <div class="number">6</div>
+        <div class="number">1</div>
         <h3>Total</h3>
       </div>
       <div class="summary-card high" onclick="filterBySeverity('high')" data-filter="high">
@@ -733,11 +733,11 @@
         <h3>High</h3>
       </div>
       <div class="summary-card medium" onclick="filterBySeverity('medium')" data-filter="medium">
-        <div class="number">5</div>
+        <div class="number">1</div>
         <h3>Medium</h3>
       </div>
       <div class="summary-card low" onclick="filterBySeverity('low')" data-filter="low">
-        <div class="number">1</div>
+        <div class="number">0</div>
         <h3>Low</h3>
       </div>
     </div>
@@ -803,373 +803,7 @@
       
       </div>
     
-      <div class="finding-group medium" data-severity="medium">
-        
-        <div class="group-header">
-          <div class="finding-left">
-            <span class="severity-badge medium">
-              <span class="severity-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </span>
-              MEDIUM
-            </span>
-            <div class="finding-title">
-              console.error() logging Sensitive Data: Authentication failed
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="instances-container">
-          <div class="instances-list">
-            
-      <div class="finding-content-inner">
-        
-            
-        
-            <div class="finding-location">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            <span class="file-path">C:/Users/marco/couple-diary/services/biometricService.ts</span>
-            <span class="line-number-badge">Line 22</span>
-            </div>
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">20</span>
-  <span class="line-content">        return result.success;</span>
-</div><div class="code-line ">
-  <span class="line-number">21</span>
-  <span class="line-content">    } catch (error) {</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">22</span>
-  <span class="line-content">        console.error(&#039;Authentication failed&#039;, error);</span>
-</div><div class="code-line ">
-  <span class="line-number">23</span>
-  <span class="line-content">        return false;</span>
-</div><div class="code-line ">
-  <span class="line-number">24</span>
-  <span class="line-content">    }</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Remove console logs with sensitive data or wrap in __DEV__ check. Use a logging library with data filtering for production.</div>
-          </div>
-        
-      </div>
-    
-          </div>
-        </div>
       
-      </div>
-    
-      <div class="finding-group medium" data-severity="medium">
-        <div class="group-header">
-          <div class="finding-left">
-            <span class="severity-badge medium">
-              <span class="severity-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </span>
-              MEDIUM
-            </span>
-            <div class="finding-title">
-              Error object logged directly - may contain sensitive data or stack traces
-              <span class="occurrence-count">2 occurrences</span>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="instances-container">
-          <div class="instances-list">
-            
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/services/biometricService.ts</span>
-                <span class="line-number-badge">Line 22</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
-      <div class="finding-content-inner">
-        
-          <div class="finding-description">Error object logged directly - may contain sensitive data or stack traces</div>
-        
-            
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">20</span>
-  <span class="line-content">        return result.success;</span>
-</div><div class="code-line ">
-  <span class="line-number">21</span>
-  <span class="line-content">    } catch (error) {</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">22</span>
-  <span class="line-content">        console.error(&#039;Authentication failed&#039;, error);</span>
-</div><div class="code-line ">
-  <span class="line-number">23</span>
-  <span class="line-content">        return false;</span>
-</div><div class="code-line ">
-  <span class="line-number">24</span>
-  <span class="line-content">    }</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Log only safe error properties (message, code). Sanitize error messages before displaying to users. Never expose stack traces in production.</div>
-          </div>
-        
-      </div>
-    
-        </div>
-      </div>
-    
-      <div class="finding">
-        <div class="finding-header">
-          <div class="finding-left">
-            <div class="finding-location" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <span class="file-path">C:/Users/marco/couple-diary/app/(tabs)/insight.tsx</span>
-                <span class="line-number-badge">Line 68</span>
-              </div>
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="finding-content">
-          
-      <div class="finding-content-inner">
-        
-          <div class="finding-description">Error object logged directly - may contain sensitive data or stack traces</div>
-        
-            
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">66</span>
-  <span class="line-content">            alert(`Reazione inviata: ${emoji}`);</span>
-</div><div class="code-line ">
-  <span class="line-number">67</span>
-  <span class="line-content">        } catch (error) {</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">68</span>
-  <span class="line-content">            console.error(&#039;Failed to react:&#039;, error);</span>
-</div><div class="code-line ">
-  <span class="line-number">69</span>
-  <span class="line-content">        }</span>
-</div><div class="code-line ">
-  <span class="line-number">70</span>
-  <span class="line-content">    };</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Log only safe error properties (message, code). Sanitize error messages before displaying to users. Never expose stack traces in production.</div>
-          </div>
-        
-      </div>
-    
-        </div>
-      </div>
-    
-          </div>
-        </div>
-      </div>
-      
-      <div class="finding-group medium" data-severity="medium">
-        
-        <div class="group-header">
-          <div class="finding-left">
-            <span class="severity-badge medium">
-              <span class="severity-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </span>
-              MEDIUM
-            </span>
-            <div class="finding-title">
-              console.log() logging Authentication Token: Failed to get push token for push notification!
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="instances-container">
-          <div class="instances-list">
-            
-      <div class="finding-content-inner">
-        
-            
-        
-            <div class="finding-location">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            <span class="file-path">C:/Users/marco/couple-diary/services/notificationService.ts</span>
-            <span class="line-number-badge">Line 47</span>
-            </div>
-        
-            
-        
-            <div class="code-snippet">
-            <div class="code-line ">
-  <span class="line-number">45</span>
-  <span class="line-content"></span>
-</div><div class="code-line ">
-  <span class="line-number">46</span>
-  <span class="line-content">        if (finalStatus !== &#039;granted&#039;) {</span>
-</div><div class="code-line highlighted medium">
-  <span class="line-number">47</span>
-  <span class="line-content">            console.log(&#039;Failed to get push token for push notification!&#039;);</span>
-</div><div class="code-line ">
-  <span class="line-number">48</span>
-  <span class="line-content">            return;</span>
-</div><div class="code-line ">
-  <span class="line-number">49</span>
-  <span class="line-content">        }</span>
-</div>
-          </div>
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Remove console logs with sensitive data or wrap in __DEV__ check. Use a logging library with data filtering for production.</div>
-          </div>
-        
-      </div>
-    
-          </div>
-        </div>
-      
-      </div>
-    
-      
-      <div class="finding-group low" data-severity="low">
-        
-        <div class="group-header">
-          <div class="finding-left">
-            <span class="severity-badge low">
-              <span class="severity-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </span>
-              LOW
-            </span>
-            <div class="finding-title">
-              Biometric authentication without proper fallback mechanism
-              
-            </div>
-          </div>
-          <svg class="expand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-          </svg>
-        </div>
-        
-        <div class="instances-container">
-          <div class="instances-list">
-            
-      <div class="finding-content-inner">
-        
-            
-        
-            <div class="finding-location">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            <span class="file-path">C:/Users/marco/couple-diary/app/_layout.tsx</span>
-            <span class="line-number-badge">Line 1</span>
-            </div>
-        
-            
-        
-        
-        
-            
-        
-            <div class="suggestion">
-              <div class="suggestion-title">
-                💡 Recommendation
-              </div>
-            <div class="suggestion-text">Implement secure fallback when biometrics fail: device passcode, secure keychain, or re-authentication.</div>
-          </div>
-        
-      </div>
-    
-          </div>
-        </div>
-      
-      </div>
-    
     </div>
     
 

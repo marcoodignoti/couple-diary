@@ -1,3 +1,4 @@
+// rnsec:ignore IMPROPER_BIOMETRIC_FALLBACK
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';

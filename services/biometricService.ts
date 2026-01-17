@@ -19,7 +19,9 @@ export async function authenticate(): Promise<boolean> {
         });
         return result.success;
     } catch (error) {
-        console.error('Authentication failed', error);
+        if (__DEV__) {
+            console.error('Authentication failed');
+        }
         return false;
     }
 }

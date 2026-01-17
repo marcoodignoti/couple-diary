@@ -38,9 +38,9 @@ export const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
     useEffect(() => {
         if (isActive) {
             opacity.value = withTiming(1, { duration: 500 });
-            translateX.value = withSpring(0, { damping: 20, stiffness: 90 });
-            scale.value = withDelay(200, withSpring(1));
-            contentTranslateY.value = withDelay(300, withSpring(0));
+            translateX.value = withSpring(0, { damping: 200, stiffness: 200 });
+            scale.value = withDelay(200, withSpring(1, { damping: 200, stiffness: 200 }));
+            contentTranslateY.value = withDelay(300, withSpring(0, { damping: 200, stiffness: 200 }));
             contentOpacity.value = withDelay(300, withTiming(1));
         } else {
             const exitX = direction === 'left' ? -width : width;

@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Dimensions,
     Image,
@@ -24,45 +24,12 @@ import { usePartnerEntries } from '../hooks/useEntryQueries';
 import { useTheme } from '../hooks/useTheme';
 import { addReaction } from '../services/reactionService';
 import { useAuthStore } from '../stores/authStore';
-import type { Entry, Mood } from '../types';
+import type { Mood } from '../types';
 
 const REACTION_EMOJIS = ['❤️', '😂', '😮', '😢', '👏', '🔥'];
 const STEP_DURATION = 15000; // 15 seconds
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// Mock entries for test mode
-const MOCK_ENTRIES: Entry[] = [
-    {
-        id: 'test-1',
-        user_id: 'mock-partner',
-        content: 'Oggi è stata una giornata speciale. Ho pensato tanto a noi e a quanto sono grato di averti nella mia vita. 💕',
-        mood: 'love' as Mood,
-        created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-        photo_url: null,
-        is_special_date: false,
-        unlock_date: new Date().toISOString(),
-    },
-    {
-        id: 'test-2',
-        user_id: 'mock-partner',
-        content: 'Il lavoro è stato stressante ma pensare a te mi ha fatto sentire meglio. Non vedo l\'ora di vederti! ✨',
-        mood: 'grateful' as Mood,
-        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        photo_url: null,
-        is_special_date: false,
-        unlock_date: new Date().toISOString(),
-    },
-    {
-        id: 'test-3',
-        user_id: 'mock-partner',
-        content: 'Che bella serata insieme! Questi momenti sono i più preziosi. Ti amo tanto. 🌟',
-        mood: 'happy' as Mood,
-        created_at: new Date().toISOString(),
-        photo_url: null,
-        is_special_date: true,
-        unlock_date: new Date().toISOString(),
-    },
-];
 
 const MOOD_CONFIG: Record<Mood, { icon: string; color: string; label: string }> = {
     happy: { icon: 'sentiment-satisfied', color: '#D4AF37', label: 'Felice' },
@@ -113,21 +80,18 @@ function ProgressBars({
 
 export default function RevealScreen() {
     const router = useRouter();
-    const { test } = useLocalSearchParams<{ test?: string }>();
-    const isTestMode = test === 'true';
 
     const { user, partner } = useAuthStore();
     const { isDark } = useTheme();
     const { data: partnerEntries = [] } = usePartnerEntries(partner?.id);
 
-    // Get entries for this week or mock entries
+    // Get entries for this week
     const entries = useMemo(() => {
-        if (isTestMode) return MOCK_ENTRIES;
         // Filter entries from last 7 days
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         return partnerEntries.filter(e => new Date(e.created_at) >= weekAgo);
-    }, [isTestMode, partnerEntries]);
+    }, [partnerEntries]);
 
     // Total steps = intro + entries + finale
     const totalSteps = 1 + entries.length + 1;
@@ -244,15 +208,10 @@ export default function RevealScreen() {
 
         setSelectedReactions(prev => ({ ...prev, [entryId]: emoji }));
 
-        if (isTestMode) {
-            alert(`[TEST] Reazione: ${emoji}`);
-            return;
-        }
-
         try {
             await addReaction(entryId, user?.id || '', 'note', undefined, undefined, emoji);
         } catch (error) {
-            console.error('Failed to react:', error);
+            console.error('Failed to react');
         }
     };
 
@@ -329,7 +288,7 @@ export default function RevealScreen() {
                 >
                     {/* Partner label */}
                     <Text style={styles.partnerLabel} pointerEvents="none">
-                        Da {isTestMode ? 'Partner' : partner?.name}:
+                        Da {partner?.name}:
                     </Text>
 
                     {/* Date */}

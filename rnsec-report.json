@@ -7,53 +7,9 @@
       "filePath": "C:/Users/marco/couple-diary/app/index.tsx",
       "line": 1,
       "suggestion": "Implement runtime integrity checks: Play Integrity API (Android), App Attest (iOS), or signature verification to detect tampering."
-    },
-    {
-      "ruleId": "IMPROPER_BIOMETRIC_FALLBACK",
-      "description": "Biometric authentication without proper fallback mechanism",
-      "severity": "LOW",
-      "filePath": "C:/Users/marco/couple-diary/app/_layout.tsx",
-      "line": 1,
-      "suggestion": "Implement secure fallback when biometrics fail: device passcode, secure keychain, or re-authentication."
-    },
-    {
-      "ruleId": "SENSITIVE_LOGGING",
-      "description": "console.error() logging Sensitive Data: Authentication failed",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/services/biometricService.ts",
-      "line": 22,
-      "snippet": "        return result.success;\r\n    } catch (error) {\r\n        console.error('Authentication failed', error);\r\n        return false;\r\n    }\r",
-      "suggestion": "Remove console logs with sensitive data or wrap in __DEV__ check. Use a logging library with data filtering for production."
-    },
-    {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Error object logged directly - may contain sensitive data or stack traces",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/services/biometricService.ts",
-      "line": 22,
-      "snippet": "        return result.success;\r\n    } catch (error) {\r\n        console.error('Authentication failed', error);\r\n        return false;\r\n    }\r",
-      "suggestion": "Log only safe error properties (message, code). Sanitize error messages before displaying to users. Never expose stack traces in production."
-    },
-    {
-      "ruleId": "SENSITIVE_LOGGING",
-      "description": "console.log() logging Authentication Token: Failed to get push token for push notification!",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/services/notificationService.ts",
-      "line": 47,
-      "snippet": "\r\n        if (finalStatus !== 'granted') {\r\n            console.log('Failed to get push token for push notification!');\r\n            return;\r\n        }\r",
-      "suggestion": "Remove console logs with sensitive data or wrap in __DEV__ check. Use a logging library with data filtering for production."
-    },
-    {
-      "ruleId": "SENSITIVE_DATA_IN_ERROR_MESSAGES",
-      "description": "Error object logged directly - may contain sensitive data or stack traces",
-      "severity": "MEDIUM",
-      "filePath": "C:/Users/marco/couple-diary/app/(tabs)/insight.tsx",
-      "line": 68,
-      "snippet": "            alert(`Reazione inviata: ${emoji}`);\r\n        } catch (error) {\r\n            console.error('Failed to react:', error);\r\n        }\r\n    };\r",
-      "suggestion": "Log only safe error properties (message, code). Sanitize error messages before displaying to users. Never expose stack traces in production."
     }
   ],
-  "scannedFiles": 72,
-  "duration": 1928,
-  "timestamp": "2026-01-16T12:26:34.380Z"
+  "scannedFiles": 79,
+  "duration": 2307,
+  "timestamp": "2026-01-17T01:09:11.948Z"
 }

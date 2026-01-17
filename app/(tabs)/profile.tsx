@@ -169,7 +169,7 @@ export default function ProfileScreen() {
                     )}
                     {!partner && (
                         <TouchableOpacity
-                            onPress={() => router.push('/(auth)/pairing' as any)}
+                            onPress={() => router.push('/onboarding/invite' as any)}
                             style={styles.connectPartnerButton}
                             activeOpacity={0.8}
                         >
@@ -289,14 +289,6 @@ export default function ProfileScreen() {
                         </View>
                     </Animated.View>
 
-                    {/* Debug Section (Hidden/Small) */}
-                    <TouchableOpacity
-                        onPress={() => router.push('/onboarding/welcome')}
-                        style={[styles.debugButton, { backgroundColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}
-                        activeOpacity={0.5}
-                    >
-                        <Text style={styles.debugText}>Inizia Test Onboarding</Text>
-                    </TouchableOpacity>
 
                     <View style={styles.footer}>
                         <Text style={styles.versionText}>Couple Diary v2.4.0</Text>

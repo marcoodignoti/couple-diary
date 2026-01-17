@@ -114,7 +114,7 @@ export default function PartnerEntriesScreen() {
                         title="Connect with your partner"
                         description="Link with your partner to see their diary entries."
                         actionLabel="Connect Now"
-                        onAction={() => router.push('/(auth)/pairing' as any)}
+                        onAction={() => router.push('/onboarding/invite' as any)}
                     />
                 </View>
             </ScrollView>

@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { usePreventScreenCapture } from 'expo-screen-capture';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
@@ -26,6 +27,7 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ isActive }) => {
+    usePreventScreenCapture();
     const router = useRouter();
     const { signIn, signUp } = useAuthStore();
 
@@ -65,7 +67,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ isActive }) => {
                 router.replace('/(tabs)');
             }
         } catch (error: any) {
-            Alert.alert('Errore', error.message || 'Qualcosa è andato storto');
+            console.error('Login/Signup error');
+            Alert.alert('Errore', 'Si è verificato un errore durante l\'operazione. Riprova.');
         } finally {
             setLoading(false);
         }

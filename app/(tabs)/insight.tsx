@@ -1,28 +1,15 @@
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Icon } from '../../components/ui/Icon';
 
-import { BorderRadius, Colors, FontSizes, Shadows, Spacing } from '../../constants/theme';
+import { Colors, Shadows } from '../../constants/theme';
 import { getWeeklyProgressFromEntries, useMyEntries, usePartnerEntries } from '../../hooks/useEntryQueries';
 import { useStatusBarPadding } from '../../hooks/useStatusBarPadding';
 import { useTheme } from '../../hooks/useTheme';
 import { addReaction } from '../../services/reactionService';
 import { useAuthStore } from '../../stores/authStore';
-
-const REACTION_EMOJIS = ['❤️', '😂', '😮', '😢', '👏', '🔥'];
-
-// Mock entry for testing reveal flow without spoiling real data
-const MOCK_PARTNER_ENTRY = {
-    id: 'test-entry-123',
-    content: 'Questa è una voce di test per verificare il flusso di reveal settimanale. Il tuo vero contenuto del partner non verrà mostrato durante il test. 💕',
-    user_id: 'mock-partner',
-    mood: 'happy' as const,
-    created_at: new Date().toISOString(),
-    photo_url: null,
-    is_special_date: false,
-};
 
 function Bar({ isCompleted, dayLabel, isDark }: { isCompleted: boolean; dayLabel: string; isDark: boolean }) {
     return (
@@ -45,8 +32,6 @@ export default function InsightScreen() {
     const { isDark, colors } = useTheme();
     const statusBarPadding = useStatusBarPadding();
 
-    // DEV TEST MODE - simulates Sunday reveal with mock data
-    const [isTestMode, setIsTestMode] = useState(false);
     // Track which reaction the user selected
     const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
 
@@ -63,14 +48,12 @@ export default function InsightScreen() {
     const weekDays = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
     const completedDaysCount = weeklyProgress.filter(d => d).length;
 
-    // Check if reveal is unlocked: Sunday after 10:00 AM OR test mode enabled
+    // Check if reveal is unlocked: Sunday after 10:00 AM
     const now = new Date();
-    const isRevealUnlocked = (now.getDay() === 0 && now.getHours() >= 10) || isTestMode;
+    const isRevealUnlocked = now.getDay() === 0 && now.getHours() >= 10;
 
-    // Get unlockable content - use mock data in test mode
-    const activePartnerEntry = isTestMode
-        ? MOCK_PARTNER_ENTRY
-        : (partnerEntries.length > 0 ? partnerEntries[0] : null);
+    // Get unlockable content
+    const activePartnerEntry = partnerEntries.length > 0 ? partnerEntries[0] : null;
 
     const handleReaction = async (emoji: string) => {
         if (!activePartnerEntry || !user?.id) return;
@@ -78,13 +61,6 @@ export default function InsightScreen() {
         // Toggle off if same emoji clicked
         if (selectedReaction === emoji) {
             setSelectedReaction(null);
-            return;
-        }
-
-        // In test mode, just show a simulated reaction
-        if (isTestMode) {
-            setSelectedReaction(emoji);
-            alert(`[TEST] Reazione simulata: ${emoji}`);
             return;
         }
 
@@ -160,30 +136,11 @@ export default function InsightScreen() {
                 </View>
             </Animated.View>
 
-            {/* DEV TEST MODE TOGGLE - Remove in production */}
-            {__DEV__ && (
-                <TouchableOpacity
-                    onPress={() => setIsTestMode(!isTestMode)}
-                    style={[
-                        styles.testModeButton,
-                        {
-                            backgroundColor: isTestMode ? Colors.primary.DEFAULT : (isDark ? Colors.stone[800] : Colors.stone[200]),
-                        }
-                    ]}
-                    activeOpacity={0.8}
-                >
-                    <Icon name={isTestMode ? 'visibility' : 'visibility-off'} size={16} color={isTestMode ? Colors.white : Colors.stone[500]} />
-                    <Text style={[styles.testModeText, { color: isTestMode ? Colors.white : Colors.stone[500] }]}>
-                        {isTestMode ? 'Test Mode ON' : 'Test Reveal'}
-                    </Text>
-                </TouchableOpacity>
-            )}
-
             {/* Weekly Reveal Button */}
             <Animated.View entering={FadeInDown.delay(200).duration(600)} style={styles.revealSection}>
                 <TouchableOpacity
-                    onPress={() => router.push(isTestMode ? '/reveal?test=true' : '/reveal')}
-                    disabled={!isRevealUnlocked && !isTestMode}
+                    onPress={() => router.push('/reveal')}
+                    disabled={!isRevealUnlocked}
                     style={[
                         styles.revealButton,
                         {
@@ -225,20 +182,15 @@ export default function InsightScreen() {
     );
 }
 
+import { TextStyle } from 'react-native';
+import { BorderRadius, FontSizes, Spacing } from '../../constants/theme';
+
 const styles = {
     header: {
         paddingHorizontal: Spacing[6],
         marginBottom: Spacing[8],
         marginTop: Spacing[2],
     } as ViewStyle,
-    headerLabel: {
-        fontSize: FontSizes.sm,
-        fontWeight: '700',
-        textTransform: 'uppercase',
-        letterSpacing: 2,
-        color: `${Colors.primary.DEFAULT}CC`,
-        marginBottom: Spacing[2],
-    } as TextStyle,
     headerTitle: {
         fontSize: FontSizes['3xl'],
         fontWeight: '800',
@@ -332,202 +284,6 @@ const styles = {
         paddingHorizontal: Spacing[6],
         flex: 1,
     } as ViewStyle,
-    revealCard: {
-        backgroundColor: Colors.espresso,
-        borderRadius: 32,
-        borderCurve: 'continuous',
-        padding: Spacing[6],
-        position: 'relative',
-        overflow: 'hidden',
-        flex: 1,
-        minHeight: 300,
-        borderWidth: 1,
-        borderColor: Colors.stone[800],
-    } as ViewStyle,
-    decorativeBlob1: {
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        width: 192,
-        height: 192,
-        backgroundColor: `${Colors.secondary.DEFAULT}1A`,
-        borderRadius: BorderRadius.full,
-        marginRight: -80,
-        marginTop: -80,
-        opacity: 0.5,
-    } as ViewStyle,
-    decorativeBlob2: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: 128,
-        height: 128,
-        backgroundColor: `${Colors.primary.DEFAULT}1A`,
-        borderRadius: BorderRadius.full,
-        marginLeft: -40,
-        marginBottom: -40,
-        opacity: 0.5,
-    } as ViewStyle,
-    revealContent: {
-        position: 'relative',
-        zIndex: 10,
-        flexDirection: 'column',
-        flex: 1,
-        height: '100%',
-    } as ViewStyle,
-    revealHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: Spacing[6],
-    } as ViewStyle,
-    revealBadge: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        paddingHorizontal: Spacing[3],
-        paddingVertical: Spacing[1.5],
-        borderRadius: BorderRadius.full,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
-    } as ViewStyle,
-    revealBadgeText: {
-        color: Colors.secondary.DEFAULT,
-        fontSize: FontSizes.xs,
-        fontWeight: '700',
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    } as TextStyle,
-    revealBody: {
-        position: 'relative',
-        flex: 1,
-        justifyContent: 'center',
-    } as ViewStyle,
-    centeredContent: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    } as ViewStyle,
-    noPartnerText: {
-        color: 'rgba(255,255,255,0.6)',
-        textAlign: 'center',
-        marginBottom: Spacing[4],
-        fontSize: FontSizes.base,
-    } as TextStyle,
-    inviteButton: {
-        backgroundColor: Colors.primary.DEFAULT,
-        paddingHorizontal: Spacing[6],
-        paddingVertical: Spacing[3],
-        borderRadius: BorderRadius.xl,
-    } as ViewStyle,
-    inviteButtonText: {
-        color: Colors.white,
-        fontWeight: '700',
-        fontSize: FontSizes.base,
-    } as TextStyle,
-    partnerLabel: {
-        fontSize: FontSizes['2xl'],
-        fontWeight: '700',
-        lineHeight: FontSizes['2xl'] * 1.1,
-        color: 'rgba(255,255,255,0.9)',
-        marginBottom: Spacing[4],
-    } as TextStyle,
-    partnerContent: {
-        fontSize: FontSizes.lg,
-        lineHeight: FontSizes.lg * 1.625,
-        color: Colors.stone[300],
-    } as TextStyle,
-    reactionBar: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: Spacing[3],
-        marginTop: Spacing[6],
-    } as ViewStyle,
-    reactionButton: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        width: 40,
-        height: 40,
-        borderRadius: BorderRadius.full,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
-    } as ViewStyle,
-    reactionEmoji: {
-        fontSize: FontSizes.xl,
-    } as TextStyle,
-    reactionButtonSelected: {
-        backgroundColor: 'rgba(255,255,255,0.3)',
-        borderColor: Colors.primary.DEFAULT,
-        borderWidth: 2,
-        transform: [{ scale: 1.1 }],
-    } as ViewStyle,
-    reactionEmojiSelected: {
-        fontSize: FontSizes.xl * 1.1,
-    } as TextStyle,
-    readMoreButton: {
-        marginTop: Spacing[6],
-        alignSelf: 'flex-start',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        paddingHorizontal: Spacing[4],
-        paddingVertical: Spacing[2],
-        borderRadius: BorderRadius.lg,
-    } as ViewStyle,
-    readMoreText: {
-        color: Colors.white,
-        fontWeight: '500',
-        fontSize: FontSizes.base,
-    } as TextStyle,
-    noEntryText: {
-        color: 'rgba(255,255,255,0.6)',
-        textAlign: 'center',
-        fontSize: FontSizes.base,
-    } as TextStyle,
-    lockedPreview: {
-        gap: Spacing[4],
-        opacity: 0.2,
-    } as ViewStyle,
-    lockedPreviewTitle: {
-        fontSize: FontSizes['2xl'],
-        fontWeight: '700',
-        lineHeight: FontSizes['2xl'] * 1.1,
-        color: 'rgba(255,255,255,0.9)',
-    } as TextStyle,
-    lockedPreviewContent: {
-        fontSize: FontSizes.lg,
-        lineHeight: FontSizes.lg * 1.625,
-        color: Colors.stone[300],
-    } as TextStyle,
-    lockOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 20,
-    } as ViewStyle,
-    lockIconContainer: {
-        backgroundColor: `${Colors.secondary.DEFAULT}1A`,
-        padding: Spacing[5],
-        borderRadius: BorderRadius.full,
-        borderWidth: 1,
-        borderColor: `${Colors.secondary.DEFAULT}33`,
-        marginBottom: Spacing[3],
-    } as ViewStyle,
-    lockBadge: {
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        paddingHorizontal: Spacing[4],
-        paddingVertical: Spacing[2],
-        borderRadius: BorderRadius.full,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
-    } as ViewStyle,
-    lockBadgeText: {
-        fontSize: FontSizes.sm,
-        fontWeight: '700',
-        color: Colors.secondary.DEFAULT,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    } as TextStyle,
     revealButton: {
         borderRadius: BorderRadius['2xl'],
         borderCurve: 'continuous',
@@ -548,19 +304,5 @@ const styles = {
     } as TextStyle,
     revealButtonSubtitle: {
         fontSize: FontSizes.sm,
-    } as TextStyle,
-    testModeButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'center',
-        gap: Spacing[2],
-        paddingHorizontal: Spacing[4],
-        paddingVertical: Spacing[2],
-        borderRadius: BorderRadius.full,
-        marginBottom: Spacing[4],
-    } as ViewStyle,
-    testModeText: {
-        fontSize: FontSizes.sm,
-        fontWeight: '600',
     } as TextStyle,
 };
