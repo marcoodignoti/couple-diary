@@ -14,22 +14,22 @@ const ONBOARDING_DATA = [
     {
         title: "La Distanza",
         description: "Quando l'amore supera i chilometri. Scrivi messaggi segreti al tuo partner, anche quando siete lontani. Un ponte digitale tra i vostri cuori.",
-        image: require('../../assets/images/onboarding-distance.png'),
+        image: require('../../assets/images/onboarding-distance.jpg'),
     },
     {
         title: "Il Diario Segreto",
         description: "Scrivi i tuoi pensieri più intimi. I messaggi restano nascosti nella nebbia fino al momento perfetto. Solo voi due saprete cosa contengono.",
-        image: require('../../assets/images/onboarding-diary.png'),
+        image: require('../../assets/images/onboarding-diary.jpg'),
     },
     {
         title: "La Domenica",
         description: "Ogni domenica, la magia si svela. I messaggi segreti vengono rivelati insieme, creando momenti speciali da condividere.",
-        image: require('../../assets/images/onboarding-reveal.png'),
+        image: require('../../assets/images/onboarding-reveal.jpg'),
     },
     {
         title: "Giorni Speciali",
         description: "Programma sorprese per compleanni, anniversari e momenti importanti. I tuoi messaggi appariranno esattamente quando vuoi tu.",
-        image: require('../../assets/images/onboarding-calendar.png'),
+        image: require('../../assets/images/onboarding-calendar.jpg'),
     },
 ];
 
