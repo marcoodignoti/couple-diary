@@ -93,6 +93,8 @@ export const FontSizes = {
   '3xl': 30,
   '4xl': 36,
   '5xl': 48,
+  '6xl': 60,  // Added for big headers
+  '7xl': 72,  // Added for hero text
 } as const;
 
 export const FontWeights = {
