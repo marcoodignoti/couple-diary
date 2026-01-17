@@ -6,6 +6,7 @@ import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
 import { AppState, LogBox, Text, TextStyle, TouchableOpacity, useColorScheme, View, ViewStyle } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Icon } from '../components/ui/Icon';
 import { UpdateLoader } from '../components/UpdateLoader';
@@ -153,31 +154,33 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryProvider>
-      <RootLayoutNav />
-      {isLocked && (
-        <View style={[styles.lockOverlay, { backgroundColor: isDark ? ThemeColors.stone[900] : ThemeColors.white }]}>
-          <View style={styles.lockContent}>
-            <View style={[styles.lockIconContainer, { backgroundColor: isDark ? ThemeColors.stone[800] : ThemeColors.stone[100] }]}>
-              <Icon name="lock" size={40} color={ThemeColors.stone[400]} />
-            </View>
-            <Text style={[styles.lockTitle, { color: isDark ? ThemeColors.stone[300] : ThemeColors.stone[600] }]}>Diario Bloccato</Text>
-            <Text style={styles.lockSubtitle}>Autenticazione richiesta</Text>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryProvider>
+        <RootLayoutNav />
+        {isLocked && (
+          <View style={[styles.lockOverlay, { backgroundColor: isDark ? ThemeColors.stone[900] : ThemeColors.white }]}>
+            <View style={styles.lockContent}>
+              <View style={[styles.lockIconContainer, { backgroundColor: isDark ? ThemeColors.stone[800] : ThemeColors.stone[100] }]}>
+                <Icon name="lock" size={40} color={ThemeColors.stone[400]} />
+              </View>
+              <Text style={[styles.lockTitle, { color: isDark ? ThemeColors.stone[300] : ThemeColors.stone[600] }]}>Diario Bloccato</Text>
+              <Text style={styles.lockSubtitle}>Autenticazione richiesta</Text>
 
-            <TouchableOpacity
-              onPress={() => {
-                isAuthenticating.current = false;
-                checkPrivacyLock();
-              }}
-              style={styles.unlockButton}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.unlockButtonText}>Sblocca</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  isAuthenticating.current = false;
+                  checkPrivacyLock();
+                }}
+                style={styles.unlockButton}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.unlockButtonText}>Sblocca</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      )}
-    </QueryProvider>
+        )}
+      </QueryProvider>
+    </GestureHandlerRootView>
   );
 }
 
