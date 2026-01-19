@@ -2,7 +2,6 @@ import type { BottomSheetBackdropProps, BottomSheetBackgroundProps, BottomSheetP
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
-import Animated from 'react-native-reanimated';
 import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
 import { useTheme } from '../../hooks/useTheme';
 import { Icon } from './Icon';
@@ -145,19 +144,11 @@ export const NativeBottomSheet = forwardRef<BottomSheet, NativeBottomSheetProps>
     // Solid background (Minimalist Design Option A)
     const renderBackground = useCallback(
       (props: BottomSheetBackgroundProps) => {
-        const style = {
-          backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
-          ...StyleSheet.flatten(props.style),
-        };
-
-        // Remove borderRadius from props if we want to control it, generally BottomSheet handles it.
-        // We ensure solid background.
-
         return (
-          <Animated.View
+          <View
             {...props}
             style={[
-              style,
+              props.style,
               {
                 backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
                 borderTopLeftRadius: 16,
