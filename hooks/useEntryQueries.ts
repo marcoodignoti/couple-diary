@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../services/supabase';
 import type { Entry, Mood, PartnerEntry } from '../types';
 import { getUnlockDate, isEntryUnlocked, toISODateString } from '../utils/dates';
@@ -10,6 +10,7 @@ export const entryKeys = {
     list: (userId: string) => [...entryKeys.lists(), userId] as const,
     partner: (partnerId: string) => [...entryKeys.all, 'partner', partnerId] as const,
     timeCapsule: (userId: string) => [...entryKeys.all, 'timeCapsule', userId] as const,
+    onThisDay: (userId: string, partnerId: string) => [...entryKeys.all, 'onThisDay', userId, partnerId] as const,
     detail: (id: string) => [...entryKeys.all, 'detail', id] as const,
 };
 
@@ -47,6 +48,7 @@ async function fetchTimeCapsule(userId: string): Promise<Entry | null> {
     oneYearAgo.setFullYear(today.getFullYear() - 1);
     const dateStr = toISODateString(oneYearAgo);
 
+    // Try to find entry from exactly 1 year ago
     const { data, error } = await supabase
         .from('entries')
         .select('*')
@@ -59,7 +61,71 @@ async function fetchTimeCapsule(userId: string): Promise<Entry | null> {
         throw new Error(error.message);
     }
 
-    return data || null;
+    if (data) return data;
+
+    // Fallback: Get a random entry older than 30 days
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+
+    // First count how many eligible entries exist
+    const { count } = await supabase
+        .from('entries')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .lt('created_at', toISODateString(thirtyDaysAgo));
+
+    if (!count) return null;
+
+    // Pick a random offset
+    const randomOffset = Math.floor(Math.random() * count);
+
+    const { data: randomEntry, error: randomError } = await supabase
+        .from('entries')
+        .select('*')
+        .eq('user_id', userId)
+        .lt('created_at', toISODateString(thirtyDaysAgo))
+        .range(randomOffset, randomOffset)
+        .single();
+
+    if (randomError && randomError.code !== 'PGRST116') {
+        console.warn('Error fetching random time capsule:', randomError);
+        return null;
+    }
+
+    return randomEntry || null;
+}
+
+/**
+ * Fetch "On This Day" entries - same day/month but from past years
+ * Returns entries from both user and partner
+ */
+async function fetchOnThisDay(userId: string, partnerId?: string): Promise<Entry[]> {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const dayMonth = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    // Fetch all entries from both users, then filter client-side for matching day/month
+    const userIds = partnerId ? [userId, partnerId] : [userId];
+
+    const { data, error } = await supabase
+        .from('entries')
+        .select('*')
+        .in('user_id', userIds)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.warn('Error fetching on this day entries:', error);
+        return [];
+    }
+
+    // Filter for entries from past years on same day/month
+    return (data || []).filter(entry => {
+        const entryDate = new Date(entry.created_at);
+        const entryYear = entryDate.getFullYear();
+        const entryDayMonth = `${String(entryDate.getMonth() + 1).padStart(2, '0')}-${String(entryDate.getDate()).padStart(2, '0')}`;
+
+        return entryYear < currentYear && entryDayMonth === dayMonth;
+    });
 }
 
 // Query hooks
@@ -87,6 +153,19 @@ export function useTimeCapsule(userId: string | undefined) {
         queryFn: () => fetchTimeCapsule(userId!),
         enabled: !!userId,
         staleTime: 1000 * 60 * 60, // 1 hour (doesn't change often)
+    });
+}
+
+/**
+ * Hook for "On This Day" feature - entries from same date in past years
+ * Returns entries from both user and partner
+ */
+export function useOnThisDay(userId: string | undefined, partnerId: string | undefined) {
+    return useQuery({
+        queryKey: entryKeys.onThisDay(userId || '', partnerId || ''),
+        queryFn: () => fetchOnThisDay(userId!, partnerId),
+        enabled: !!userId,
+        staleTime: 1000 * 60 * 60, // 1 hour
     });
 }
 

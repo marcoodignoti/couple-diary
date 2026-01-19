@@ -1,18 +1,55 @@
-import { Link, Redirect, useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
-import { Pressable, RefreshControl, ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Redirect, useRouter } from 'expo-router';
+import React, { useCallback, useMemo } from 'react';
+import { RefreshControl, ScrollView, Text, TextStyle, View, ViewStyle } from 'react-native';
 import Animated, { FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
-import { Icon } from '../../components/ui/Icon';
 
 import { EmptyState } from '../../components/ui/EmptyState';
-import { FoggedEntry } from '../../components/ui/FoggedEntry';
-import { GlassCard } from '../../components/ui/GlassCard';
-import { BorderRadius, Colors, FontSizes, Shadows, Spacing } from '../../constants/theme';
-import { useMyEntries, usePartnerEntries } from '../../hooks/useEntryQueries';
+import { HeroCard } from '../../components/ui/HeroCard';
+import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
+import { useMyEntries, useOnThisDay, usePartnerEntries } from '../../hooks/useEntryQueries';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useStatusBarPadding } from '../../hooks/useStatusBarPadding';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore } from '../../stores/authStore';
+
+/**
+ * Check if the reveal window is open (Sunday 10:00-23:59)
+ * Returns: { isOpen, countdownText, daysUntilSunday }
+ */
+function useRevealWindow() {
+  return useMemo(() => {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sunday
+    const hour = now.getHours();
+    const minutes = now.getMinutes();
+
+    // Sunday is 0, Monday is 1, etc.
+    const isSunday = dayOfWeek === 0;
+    const isAfter10AM = hour >= 10;
+    const isOpen = isSunday && isAfter10AM;
+
+    // Calculate countdown
+    let countdownText = '';
+    if (!isOpen) {
+      if (isSunday && !isAfter10AM) {
+        // It's Sunday before 10:00
+        const hoursLeft = 10 - hour - (minutes > 0 ? 1 : 0);
+        const minutesLeft = minutes > 0 ? 60 - minutes : 0;
+        countdownText = hoursLeft > 0
+          ? `Disponibile tra ${hoursLeft}h ${minutesLeft}m`
+          : `Disponibile tra ${minutesLeft} minuti`;
+      } else {
+        // It's another day
+        const daysUntilSunday = dayOfWeek === 0 ? 7 : 7 - dayOfWeek;
+        countdownText = daysUntilSunday === 1
+          ? 'Disponibile domani alle 10:00'
+          : `Disponibile domenica alle 10:00`;
+      }
+    }
+
+    return { isOpen, countdownText };
+  }, []);
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -20,6 +57,7 @@ export default function HomeScreen() {
   const { isDark, colors } = useTheme();
   const { contentMaxWidth, isTablet, horizontalPadding } = useResponsive();
   const statusBarPadding = useStatusBarPadding();
+  const { isOpen: isRevealOpen, countdownText } = useRevealWindow();
 
   // React Query hooks - data is automatically cached and refetched
   const {
@@ -34,6 +72,29 @@ export default function HomeScreen() {
     refetch: refetchPartner,
     isRefetching: isRefetchingPartner,
   } = usePartnerEntries(partner?.id);
+
+  // On This Day - entries from same date in past years
+  const { data: onThisDayEntries = [] } = useOnThisDay(user?.id, partner?.id);
+  const onThisDayEntry = onThisDayEntries[0]; // Show the most recent one
+
+  // Weekly stats - count entries this week
+  const weeklyStats = useMemo(() => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - daysToSubtract);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const count = entries.filter(e => new Date(e.created_at) >= weekStart).length;
+    const daysWithEntries = new Set(
+      entries
+        .filter(e => new Date(e.created_at) >= weekStart)
+        .map(e => new Date(e.created_at).toDateString())
+    ).size;
+
+    return { count, daysWithEntries };
+  }, [entries]);
 
   const isLoading = authLoading || entriesLoading;
   const isRefreshing = isRefetchingEntries || isRefetchingPartner;
@@ -97,134 +158,145 @@ export default function HomeScreen() {
         </Animated.View>
 
         <Animated.View layout={LinearTransition} style={styles.cardsContainer}>
-          {/* Daily Prompt Card - Solid Premium Style */}
+          {/* Featured Card: Write Today - Pink Theme */}
           <Animated.View entering={FadeInDown.delay(100).duration(600)} exiting={FadeOut.duration(200)}>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => router.push('/entry/new' as any)}
-              style={[
-                styles.promptCard,
-                {
-                  backgroundColor: Colors.primary.DEFAULT,
-                  boxShadow: `0px 8px 24px ${Colors.primary.DEFAULT}4D`,
-                } as ViewStyle
-              ]}
-            >
-              {/* Decorative background circle */}
-              {process.env.EXPO_OS !== 'android' && (
-                <View style={styles.decorativeCircle} />
-              )}
-
-              <View style={styles.promptHeader}>
-                <View style={styles.promptBadge}>
-                  <Text style={styles.promptBadgeText}>
-                    {todayEntry ? "Pensiero di Oggi" : "Spunto del Giorno"}
-                  </Text>
-                </View>
-                <Icon name={todayEntry ? "check-circle" : "edit"} size={20} color="rgba(255,255,255,0.9)" />
-              </View>
-
-              <Text style={styles.promptTitle}>
-                {todayEntries.length > 0 ? `${todayEntries.length} pensieri oggi` : 'Cosa ti ha fatto sorridere oggi?'}
-              </Text>
-
-              <Text style={styles.promptSubtitle}>
-                {todayEntries.length > 0
-                  ? 'Continua a scrivere! Aggiungi un altro pensiero al vostro diario.'
-                  : 'Condividi i piccoli momenti di gioia. Il tuo partner sta aspettando.'
-                }
-              </Text>
-
-              <View style={[styles.promptButton, { boxShadow: Shadows.sm } as ViewStyle]}>
-                <Icon name="create" size={18} color={Colors.primary.DEFAULT} />
-                <Text style={styles.promptButtonText}>
-                  {todayEntries.length > 0 ? 'Scrivi ancora' : 'Scrivi Ora'}
-                </Text>
-              </View>
-            </TouchableOpacity>
+            <HeroCard
+              title={todayEntries.length > 0 ? `${todayEntries.length} pensieri oggi` : 'Cosa ti ha fatto sorridere oggi?'}
+              content={todayEntries.length > 0
+                ? 'Continua a scrivere! Aggiungi un altro pensiero.'
+                : 'Condividi i piccoli momenti di gioia con il tuo partner.'
+              }
+              themeColor="#E8B4B8"
+              glowColor="#F9A8D4"
+              icon={todayEntry ? "check-circle" : "edit"}
+              badgeText={todayEntry ? "Pensiero di Oggi" : "Scrivi"}
+              badgeIcon={todayEntry ? "check-circle" : "edit"}
+              ctaText={todayEntries.length > 0 ? 'Scrivi ancora' : 'Scrivi Ora'}
+              onPress={() => router.push({ pathname: '/entry/new', params: { theme: 'pink' } } as any)}
+            />
           </Animated.View>
 
-          {/* Partner Entry Card - Glass Style */}
+          {/* Grid: Reveal + Partner */}
+          {partner && (
+            <Animated.View
+              entering={FadeInDown.delay(150).duration(600)}
+              exiting={FadeOut.duration(200)}
+              style={styles.gridContainer}
+            >
+              {/* Reveal Card */}
+              <View style={styles.gridItem}>
+                {isRevealOpen ? (
+                  <HeroCard
+                    title="Rivelazione"
+                    content="Scopri cosa ha scritto il tuo partner!"
+                    themeColor="#2E1065" // Cosmic Purple
+                    glowColor="#7C3AED"
+                    icon="auto-awesome"
+                    badgeText="ORA"
+                    badgeIcon="lock-open"
+                    ctaText="Apri"
+                    onPress={() => router.push('/reveal' as any)}
+                    size="compact"
+                  />
+                ) : (
+                  <HeroCard
+                    title="Rivelazione"
+                    content={countdownText}
+                    themeColor="#44403c" // Stone 700
+                    glowColor="#78716c"
+                    icon="lock"
+                    badgeText="Attesa"
+                    badgeIcon="hourglass-empty"
+                    ctaText="Domenica"
+                    onPress={() => { }}
+                    size="compact"
+                    style={{ opacity: 0.85 }}
+                  />
+                )}
+              </View>
+
+              {/* Partner Card */}
+              <View style={styles.gridItem}>
+                {latestPartnerEntry && latestPartnerEntry.isUnlocked ? (
+                  <HeroCard
+                    title={partner.name}
+                    content={latestPartnerEntry.content}
+                    themeColor="#BE123C" // Rose Red
+                    glowColor="#FB7185"
+                    icon="favorite"
+                    badgeText="Nuovo"
+                    badgeIcon="notifications-active"
+                    ctaText="Leggi"
+                    onPress={() => router.push('/partner' as any)}
+                    size="compact"
+                  />
+                ) : (
+                  <HeroCard
+                    title={partner.name}
+                    content={latestPartnerEntry ? 'Ha un pensiero nascosto...' : 'Non ha ancora scritto'}
+                    themeColor="#BE123C" // Rose Red
+                    glowColor="#FB7185"
+                    icon="favorite"
+                    badgeText={latestPartnerEntry ? 'Bloccato' : 'Vuoto'}
+                    badgeIcon={latestPartnerEntry ? 'lock' : 'edit-off'}
+                    ctaText="Aspetta"
+                    onPress={() => router.push('/partner' as any)}
+                    size="compact"
+                    style={{ opacity: 0.75 }}
+                  />
+                )}
+              </View>
+            </Animated.View>
+          )}
+
+          {/* Weekly Stats Card */}
           {partner && (
             <Animated.View entering={FadeInDown.delay(200).duration(600)} exiting={FadeOut.duration(200)}>
-              {latestPartnerEntry ? (
-                latestPartnerEntry.isUnlocked ? (
-                  <GlassCard
-                    href="/partner"
-                    style={{ borderRadius: 32, borderWidth: 1, borderColor: isDark ? '#333' : 'rgba(255,255,255,0.5)' }}
-                  >
-                    <View style={styles.partnerHeader}>
-                      <Text selectable style={[styles.partnerTitle, { color: isDark ? Colors.white : Colors.text.light }]}>
-                        Diario di {partner.name}
-                      </Text>
-                      <View style={styles.unlockBadge}>
-                        <Icon name="lock-open" size={14} color={Colors.primary.DEFAULT} />
-                        <Text style={styles.unlockText}>Sbloccato</Text>
-                      </View>
-                    </View>
+              <HeroCard
+                title="Questa Settimana"
+                content={`${weeklyStats.count} ${weeklyStats.count === 1 ? 'pensiero' : 'pensieri'} in ${weeklyStats.daysWithEntries} ${weeklyStats.daysWithEntries === 1 ? 'giorno' : 'giorni'}`}
+                themeColor="#0D9488" // Teal
+                glowColor="#2DD4BF"
+                icon="bar-chart"
+                badgeText="Statistiche"
+                badgeIcon="analytics"
+                ctaText="Vedi dettagli"
+                onPress={() => { }} // Could link to a stats page later
+                size="large"
+              />
+            </Animated.View>
+          )}
 
-                    <Text
-                      selectable
-                      style={[styles.partnerContent, { color: isDark ? Colors.stone[300] : `${Colors.text.light}CC` }]}
-                      numberOfLines={3}
-                    >
-                      {latestPartnerEntry.content}
-                    </Text>
-
-                    <View style={[styles.partnerFooter, { borderTopColor: isDark ? `${Colors.stone[800]}80` : Colors.stone[100] }]}>
-                      <Text style={styles.readMoreText}>Leggi tutto</Text>
-                      <Icon name="chevron-right" size={18} color={Colors.primary.DEFAULT} />
-                    </View>
-                  </GlassCard>
-                ) : (
-                  <Link href="/partner" asChild>
-                    <Link.Trigger>
-                      <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
-                        <FoggedEntry entry={latestPartnerEntry} />
-                      </Pressable>
-                    </Link.Trigger>
-                    <Link.Preview />
-                  </Link>
-                )
-              ) : (
-                <GlassCard style={{ alignItems: 'center', padding: 32, borderRadius: 32 }}>
-                  <View style={[styles.emptyPartnerIcon, { backgroundColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}>
-                    <Icon name="edit-off" size={24} color={Colors.stone[300]} />
-                  </View>
-                  <Text selectable style={[styles.emptyPartnerTitle, { color: isDark ? Colors.white : Colors.text.light }]}>
-                    {partner.name} non ha ancora scritto
-                  </Text>
-                  <Text selectable style={styles.emptyPartnerSubtitle}>
-                    Ricordagli di condividere la sua giornata!
-                  </Text>
-                </GlassCard>
-              )}
+          {/* On This Day Card - Only if there are entries from past years */}
+          {onThisDayEntry && (
+            <Animated.View entering={FadeInDown.delay(250).duration(600)} exiting={FadeOut.duration(200)}>
+              <HeroCard
+                title={`${new Date(onThisDayEntry.created_at).getFullYear()} - Oggi`}
+                content={onThisDayEntry.content}
+                themeColor="#D97706"
+                glowColor="#F59E0B"
+                icon="history"
+                badgeText="In Questo Giorno"
+                badgeIcon="auto-awesome"
+                ctaText="Rivivi il ricordo"
+                onPress={() => router.push(`/entry/${onThisDayEntry.id}` as any)}
+              />
             </Animated.View>
           )}
 
           {/* Connect Card - Only if no partner */}
           {!partner && (
             <Animated.View entering={FadeInDown.delay(200).duration(600)} exiting={FadeOut.duration(200)}>
-              <TouchableOpacity
+              <HeroCard
+                title="Collegati col partner"
+                content="Condividi il tuo codice di accoppiamento per iniziare il vostro diario condiviso."
+                themeColor={Colors.secondary.DEFAULT}
+                glowColor="#F472B6"
+                icon="people"
+                badgeText="Connetti"
+                badgeIcon="group-add"
                 onPress={() => router.push('/onboarding/invite' as any)}
-                activeOpacity={0.9}
-                style={[
-                  styles.connectCard,
-                  {
-                    backgroundColor: Colors.secondary.DEFAULT,
-                    boxShadow: `0px 8px 24px ${Colors.secondary.DEFAULT}4D`,
-                  } as ViewStyle
-                ]}
-              >
-                <View style={styles.connectHeader}>
-                  <Icon name="people" size={20} color={Colors.white} />
-                  <Text style={styles.connectBadgeText}>Connetti</Text>
-                </View>
-                <Text style={styles.connectTitle}>Collegati col partner</Text>
-                <Text style={styles.connectSubtitle}>
-                  Condividi il tuo codice di accoppiamento per iniziare il vostro diario condiviso.
-                </Text>
-              </TouchableOpacity>
+              />
             </Animated.View>
           )}
 
@@ -283,122 +355,53 @@ const styles = {
     fontWeight: '500',
     marginTop: Spacing[2],
   } as TextStyle,
-  divider: {
-    height: 1,
-    width: '100%',
-    marginBottom: Spacing[8],
-    opacity: 0.5,
-  } as ViewStyle,
   cardsContainer: {
-    gap: Spacing[6],
+    gap: Spacing[4], // Standard 16px
   } as ViewStyle,
-  promptCard: {
-    borderRadius: 32,
-    borderCurve: 'continuous',
-    padding: Spacing[6],
-    position: 'relative',
-    overflow: 'hidden',
-  } as ViewStyle,
-  decorativeCircle: {
-    position: 'absolute',
-    right: -48,
-    top: -48,
-    width: 192,
-    height: 192,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: BorderRadius.full,
-  } as ViewStyle,
-  promptHeader: {
+  // Grid layout for Reveal + Partner cards
+  gridContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing[4],
-    zIndex: 10,
+    gap: Spacing[4], // Standard 16px
   } as ViewStyle,
-  promptBadge: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+  gridItem: {
+    flex: 1,
+  } as ViewStyle,
+  // Helper for custom Partner Header rendering in HeroCard
+  avatarPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as ViewStyle,
+  avatarInitials: {
+    color: Colors.white,
+    fontWeight: '700',
+    fontSize: FontSizes.base,
+  } as TextStyle,
+  revealTitle: { // Used in custom header
+    color: Colors.white,
+    fontSize: FontSizes['2xl'],
+    fontWeight: '700',
+  } as TextStyle,
+  revealBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing[1],
+    backgroundColor: 'rgba(255,255,255,0.1)',
     paddingHorizontal: Spacing[3],
     paddingVertical: Spacing[1],
     borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    alignSelf: 'flex-start',
   } as ViewStyle,
-  promptBadgeText: {
-    color: Colors.white,
+  revealBadgeText: {
+    color: '#FFFFFF',
     fontSize: FontSizes.xs,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
   } as TextStyle,
-  promptTitle: {
-    color: Colors.white,
-    fontSize: FontSizes['2xl'],
-    fontWeight: '700',
-    marginBottom: Spacing[2],
-    zIndex: 10,
-  } as TextStyle,
-  promptSubtitle: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: FontSizes.sm,
-    lineHeight: FontSizes.sm * 1.625,
-    marginBottom: Spacing[6],
-    zIndex: 10,
-    maxWidth: '90%',
-  } as TextStyle,
-  promptButton: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius['2xl'],
-    borderCurve: 'continuous',
-    paddingVertical: Spacing[3.5],
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing[2],
-    zIndex: 10,
-  } as ViewStyle,
-  promptButtonText: {
-    color: Colors.primary.DEFAULT,
-    fontWeight: '700',
-    fontSize: FontSizes.base,
-  } as TextStyle,
-  partnerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing[4],
-  } as ViewStyle,
-  partnerTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '700',
-  } as TextStyle,
-  unlockBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing[1],
-  } as ViewStyle,
-  unlockText: {
-    fontSize: FontSizes.xs,
-    fontWeight: '700',
-    color: Colors.stone[400],
-  } as TextStyle,
-  partnerContent: {
-    fontSize: FontSizes.base,
-    lineHeight: FontSizes.base * 1.625,
-    marginBottom: Spacing[4],
-  } as TextStyle,
-  partnerFooter: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: Spacing[4],
-    borderTopWidth: 1,
-  } as ViewStyle,
-  readMoreText: {
-    color: Colors.secondary.DEFAULT,
-    fontWeight: '700',
-    fontSize: FontSizes.sm,
-    marginRight: Spacing[1],
-  } as TextStyle,
+  // Empty State styles usually needed? Checked: used in render
   emptyPartnerIcon: {
     width: 64,
     height: 64,
@@ -417,33 +420,34 @@ const styles = {
     textAlign: 'center',
     fontSize: FontSizes.sm,
   } as TextStyle,
-  connectCard: {
-    borderRadius: 32,
-    borderCurve: 'continuous',
-    padding: Spacing[6],
-  } as ViewStyle,
-  connectHeader: {
-    flexDirection: 'row',
+  // Locked Reveal Card styles
+  lockedRevealContainer: {
     alignItems: 'center',
-    gap: Spacing[2],
-    marginBottom: Spacing[3],
+    paddingVertical: Spacing[4],
   } as ViewStyle,
-  connectBadgeText: {
-    color: Colors.white,
-    fontSize: FontSizes.xs,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  } as TextStyle,
-  connectTitle: {
-    color: Colors.white,
-    fontSize: FontSizes['2xl'],
+  lockedIconContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing[4],
+  } as ViewStyle,
+  lockedRevealTitle: {
+    fontSize: FontSizes.xl,
     fontWeight: '700',
     marginBottom: Spacing[2],
+    textAlign: 'center',
   } as TextStyle,
-  connectSubtitle: {
-    color: 'rgba(255,255,255,0.9)',
+  lockedRevealSubtitle: {
+    fontSize: FontSizes.base,
+    fontWeight: '600',
+    marginBottom: Spacing[2],
+    textAlign: 'center',
+  } as TextStyle,
+  lockedRevealHint: {
     fontSize: FontSizes.sm,
-    lineHeight: FontSizes.sm * 1.625,
+    textAlign: 'center',
+    maxWidth: '90%',
   } as TextStyle,
 };

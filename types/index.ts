@@ -10,7 +10,7 @@ export interface Profile {
     created_at: string;
 }
 
-export type Mood = 'happy' | 'love' | 'grateful' | 'peaceful' | 'excited' | 'sad' | 'anxious' | 'tired';
+export type Mood = 'happy' | 'love' | 'grateful' | 'peaceful' | 'excited' | 'sad' | 'anxious' | 'tired' | 'calm' | 'angry';
 
 export interface Entry {
     id: string;

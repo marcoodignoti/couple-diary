@@ -1,13 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ImageStyle, ScrollView, Text, TouchableOpacity, View, ViewStyle, TextStyle } from 'react-native';
+import { Image, ImageStyle, ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
-import { useTheme } from '../../../hooks/useTheme';
-import { Colors, BorderRadius, FontSizes, Spacing, Shadows } from '../../../constants/theme';
 import { Icon, IconName } from '../../../components/ui/Icon';
+import { BorderRadius, Colors, FontSizes, Shadows, Spacing } from '../../../constants/theme';
+import { usePartnerEntries } from '../../../hooks/useEntryQueries';
+import { useTheme } from '../../../hooks/useTheme';
 import { useAuthStore } from '../../../stores/authStore';
-import { useEntryStore } from '../../../stores/entryStore';
 import type { Mood } from '../../../types';
 
 const getMoodData = (mood: Mood | null) => {
@@ -28,7 +28,7 @@ export default function PartnerEntryDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { partner } = useAuthStore();
-    const { partnerEntries } = useEntryStore();
+    const { data: partnerEntries = [] } = usePartnerEntries(partner?.id);
     const { isDark, colors } = useTheme();
 
     const entry = partnerEntries.find(e => e.id === id);

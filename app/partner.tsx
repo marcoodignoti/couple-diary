@@ -144,169 +144,195 @@ export default function PartnerEntriesScreen() {
     }
 
     return (
-        <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{ flex: 1, backgroundColor: colors.background }}
-            contentContainerStyle={{ paddingHorizontal: Spacing[5], paddingBottom: 120, paddingTop: statusBarPadding }}
-            refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} tintColor={Colors.primary.DEFAULT} />}
-        >
-            {/* Header */}
-            <View style={[styles.headerInline, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Icon name="arrow-back" size={24} color={isDark ? Colors.white : Colors.text.light} />
-                    <Text style={[styles.headerTitle, { color: isDark ? Colors.white : Colors.text.light }]}>{partner.name}'s Diary</Text>
-                </TouchableOpacity>
-            </View>
+        <View style={{ flex: 1, backgroundColor: '#BE123C' }}>
+            {/* Hero Background Elements */}
+            <View style={styles.heroGlow} />
+            <Icon name="favorite" size={300} color="#FFFFFF" style={styles.heroBgIcon as any} />
 
-            {/* Locked Entries Section */}
-            {lockedEntries.length > 0 && (
-                <Animated.View entering={FadeInDown.duration(400)} style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Icon name="lock" size={20} color={Colors.secondary.DEFAULT} />
-                        <Text style={[styles.sectionTitle, { color: isDark ? Colors.white : Colors.text.light }]}>
-                            Waiting to Unlock
-                        </Text>
-                        {nextUnlockDate && (
-                            <View style={styles.unlockBadge}>
-                                <Text style={styles.unlockBadgeText}>{formatUnlockDate(nextUnlockDate)}</Text>
-                            </View>
-                        )}
-                    </View>
-
-                    {/* Locked Entry Cards */}
-                    <View style={styles.entriesContainer}>
-                        {lockedEntries.slice(0, 3).map((entry) => (
-                            <View
-                                key={entry.id}
-                                style={[
-                                    styles.lockedCard,
-                                    {
-                                        backgroundColor: isDark ? Colors.surface.dark : Colors.white,
-                                        borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
-                                    }
-                                ]}
-                            >
-                                <View style={[styles.lockedCardHeader, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}>
-                                    <View style={styles.moodRow}>
-                                        <Icon name={getMoodIcon(entry.mood)} size={20} color={getMoodColor(entry.mood)} />
-                                        <Text selectable style={styles.dateText}>
-                                            {new Date(entry.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.lockInfo}>
-                                        <Icon name="lock" size={14} color={Colors.stone[400]} />
-                                        <Text style={styles.unlockText}>
-                                            Unlocks {new Date(entry.unlock_date).toLocaleDateString('en-US', { weekday: 'short' })}
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.blurContainer}>
-                                    <View style={styles.placeholderContent}>
-                                        <View style={[styles.placeholderLine, { backgroundColor: isDark ? Colors.stone[700] : Colors.stone[200], width: '100%' }]} />
-                                        <View style={[styles.placeholderLine, { backgroundColor: isDark ? Colors.stone[700] : Colors.stone[200], width: '80%' }]} />
-                                        <View style={[styles.placeholderLine, { backgroundColor: isDark ? Colors.stone[700] : Colors.stone[200], width: '60%' }]} />
-                                    </View>
-                                    <BlurView intensity={15} tint={isDark ? 'dark' : 'light'} style={styles.blurOverlay}>
-                                        <Animated.View style={animatedLockStyle}>
-                                            <View style={[styles.lockIconBg, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)' }]}>
-                                                <Icon name="lock" size={24} color={Colors.primary.DEFAULT} />
-                                            </View>
-                                        </Animated.View>
-                                    </BlurView>
-                                </View>
-                            </View>
-                        ))}
-
-                        {lockedEntries.length > 3 && (
-                            <Text style={styles.moreText}>
-                                +{lockedEntries.length - 3} more entries waiting
-                            </Text>
-                        )}
-                    </View>
-                </Animated.View>
-            )}
-
-            {/* Unlocked Entries Section */}
-            <Animated.View entering={FadeInDown.delay(200).duration(400)}>
-                <View style={styles.sectionHeader}>
-                    <Icon name="lock-open" size={20} color={Colors.primary.DEFAULT} />
-                    <Text style={[styles.sectionTitle, { color: isDark ? Colors.white : Colors.text.light }]}>
-                        Unlocked Entries
-                    </Text>
-                    {unlockedEntries.length > 0 && (
-                        <View style={styles.countBadge}>
-                            <Text style={[styles.countBadgeText, { fontVariant: ['tabular-nums'] }]}>{unlockedEntries.length}</Text>
-                        </View>
-                    )}
+            <ScrollView
+                contentInsetAdjustmentBehavior="automatic"
+                style={{ flex: 1 }}
+                contentContainerStyle={{ paddingHorizontal: Spacing[5], paddingBottom: 120, paddingTop: statusBarPadding }}
+                refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} tintColor="#FFFFFF" />}
+            >
+                {/* Header */}
+                <View style={[styles.headerInline, { borderBottomColor: 'rgba(255,255,255,0.2)' }]}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                        <Icon name="arrow-back" size={24} color="#FFFFFF" />
+                        <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>{partner.name}'s Diary</Text>
+                    </TouchableOpacity>
                 </View>
 
-                {unlockedEntries.length > 0 ? (
-                    <Animated.View layout={LinearTransition} style={styles.entriesContainer}>
-                        {unlockedEntries.map((entry, i) => {
-                            const handleShare = async () => {
-                                try {
-                                    await Share.share({ message: entry.content, title: `${partner?.name}'s thought` });
-                                } catch (e) { }
-                            };
-                            return (
-                                <Link key={entry.id} href={`/entry/partner/${entry.id}` as any} asChild>
-                                    <Link.Trigger>
-                                        <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
-                                            <Animated.View
-                                                entering={FadeIn.delay(100 * i).duration(300)}
-                                                exiting={FadeOut.duration(200)}
-                                                style={[
-                                                    styles.entryCard,
-                                                    {
-                                                        backgroundColor: isDark ? Colors.surface.dark : Colors.white,
-                                                        borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
-                                                        boxShadow: Shadows.sm,
-                                                    } as ViewStyle
-                                                ]}
-                                            >
-                                                <View style={styles.entryHeader}>
-                                                    <View>
-                                                        <Text selectable style={styles.entryDate}>
-                                                            {new Date(entry.created_at).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                                                        </Text>
-                                                        <Text selectable style={styles.entryTime}>
-                                                            {new Date(entry.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                                                        </Text>
-                                                    </View>
-                                                    <Icon name={getMoodIcon(entry.mood)} size={28} color={getMoodColor(entry.mood)} />
-                                                </View>
-                                                <Text selectable style={[styles.entryContent, { color: isDark ? Colors.text.dark : Colors.text.light }]} numberOfLines={4}>
-                                                    {entry.content}
-                                                </Text>
-                                                <View style={styles.readMoreRow}>
-                                                    <Text style={styles.readMoreText}>Read more</Text>
-                                                    <Icon name="chevron-right" size={16} color={Colors.stone[300]} />
+                {/* Locked Entries Section */}
+                {lockedEntries.length > 0 && (
+                    <Animated.View entering={FadeInDown.duration(400)} style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Icon name="lock" size={20} color="rgba(255,255,255,0.8)" />
+                            <Text style={[styles.sectionTitle, { color: '#FFFFFF' }]}>
+                                Waiting to Unlock
+                            </Text>
+                            {nextUnlockDate && (
+                                <View style={styles.unlockBadge}>
+                                    <Text style={styles.unlockBadgeText}>{formatUnlockDate(nextUnlockDate)}</Text>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Locked Entry Cards */}
+                        <View style={styles.entriesContainer}>
+                            {lockedEntries.slice(0, 3).map((entry) => (
+                                <View
+                                    key={entry.id}
+                                    style={[
+                                        styles.lockedCard,
+                                        {
+                                            backgroundColor: 'rgba(255,255,255,0.1)',
+                                            borderColor: 'rgba(255,255,255,0.2)',
+                                        }
+                                    ]}
+                                >
+                                    <View style={[styles.lockedCardHeader, { borderBottomColor: 'rgba(255,255,255,0.1)' }]}>
+                                        <View style={styles.moodRow}>
+                                            <Icon name={getMoodIcon(entry.mood)} size={20} color="#FFFFFF" />
+                                            <Text selectable style={[styles.dateText, { color: 'rgba(255,255,255,0.9)' }]}>
+                                                {new Date(entry.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.lockInfo}>
+                                            <Icon name="lock" size={14} color="rgba(255,255,255,0.6)" />
+                                            <Text style={[styles.unlockText, { color: 'rgba(255,255,255,0.6)' }]}>
+                                                Unlocks {new Date(entry.unlock_date).toLocaleDateString('en-US', { weekday: 'short' })}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.blurContainer}>
+                                        <View style={styles.placeholderContent}>
+                                            <View style={[styles.placeholderLine, { backgroundColor: 'rgba(255,255,255,0.1)', width: '100%' }]} />
+                                            <View style={[styles.placeholderLine, { backgroundColor: 'rgba(255,255,255,0.1)', width: '80%' }]} />
+                                            <View style={[styles.placeholderLine, { backgroundColor: 'rgba(255,255,255,0.1)', width: '60%' }]} />
+                                        </View>
+                                        <BlurView intensity={20} tint="light" style={styles.blurOverlay}>
+                                            <Animated.View style={animatedLockStyle}>
+                                                <View style={[styles.lockIconBg, { backgroundColor: 'rgba(255,255,255,0.9)' }]}>
+                                                    <Icon name="lock" size={24} color="#BE123C" />
                                                 </View>
                                             </Animated.View>
-                                        </Pressable>
-                                    </Link.Trigger>
-                                    <Link.Menu>
-                                        <Link.MenuAction title="Condividi" icon="square.and.arrow.up" onPress={handleShare} />
-                                    </Link.Menu>
-                                    <Link.Preview />
-                                </Link>
-                            );
-                        })}
+                                        </BlurView>
+                                    </View>
+                                </View>
+                            ))}
+
+                            {lockedEntries.length > 3 && (
+                                <Text style={[styles.moreText, { color: 'rgba(255,255,255,0.7)' }]}>
+                                    +{lockedEntries.length - 3} more entries waiting
+                                </Text>
+                            )}
+                        </View>
                     </Animated.View>
-                ) : (
-                    <EmptyState
-                        icon="hourglass-empty"
-                        title="No entries unlocked yet"
-                        description={`${partner.name}'s entries will unlock every Sunday. Check back soon!`}
-                    />
                 )}
-            </Animated.View>
-        </ScrollView>
+
+                {/* Unlocked Entries Section */}
+                <Animated.View entering={FadeInDown.delay(200).duration(400)}>
+                    <View style={styles.sectionHeader}>
+                        <Icon name="lock-open" size={20} color="#FFFFFF" />
+                        <Text style={[styles.sectionTitle, { color: '#FFFFFF' }]}>
+                            Unlocked Entries
+                        </Text>
+                        {unlockedEntries.length > 0 && (
+                            <View style={[styles.countBadge, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                                <Text style={[styles.countBadgeText, { color: '#FFFFFF' }]}>{unlockedEntries.length}</Text>
+                            </View>
+                        )}
+                    </View>
+
+                    {unlockedEntries.length > 0 ? (
+                        <Animated.View layout={LinearTransition} style={styles.entriesContainer}>
+                            {unlockedEntries.map((entry, i) => {
+                                const handleShare = async () => {
+                                    try {
+                                        await Share.share({ message: entry.content, title: `${partner?.name}'s thought` });
+                                    } catch (e) { }
+                                };
+                                return (
+                                    <Link key={entry.id} href={`/entry/partner/${entry.id}` as any} asChild>
+                                        <Link.Trigger>
+                                            <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
+                                                <Animated.View
+                                                    entering={FadeIn.delay(100 * i).duration(300)}
+                                                    exiting={FadeOut.duration(200)}
+                                                    style={[
+                                                        styles.entryCard,
+                                                        {
+                                                            backgroundColor: 'rgba(255,255,255,0.95)',
+                                                            borderColor: 'rgba(255,255,255,0.5)',
+                                                            boxShadow: Shadows.sm,
+                                                        } as ViewStyle
+                                                    ]}
+                                                >
+                                                    <View style={styles.entryHeader}>
+                                                        <View>
+                                                            <Text selectable style={[styles.entryDate, { color: '#BE123C' }]}>
+                                                                {new Date(entry.created_at).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                                                            </Text>
+                                                            <Text selectable style={[styles.entryTime, { color: '#881337' }]}>
+                                                                {new Date(entry.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                                                            </Text>
+                                                        </View>
+                                                        <Icon name={getMoodIcon(entry.mood)} size={28} color={getMoodColor(entry.mood)} />
+                                                    </View>
+                                                    <Text selectable style={[styles.entryContent, { color: '#1a1a1a' }]} numberOfLines={4}>
+                                                        {entry.content}
+                                                    </Text>
+                                                    <View style={styles.readMoreRow}>
+                                                        <Text style={[styles.readMoreText, { color: '#BE123C' }]}>Read more</Text>
+                                                        <Icon name="chevron-right" size={16} color="#BE123C" />
+                                                    </View>
+                                                </Animated.View>
+                                            </Pressable>
+                                        </Link.Trigger>
+                                        <Link.Menu>
+                                            <Link.MenuAction title="Condividi" icon="square.and.arrow.up" onPress={handleShare} />
+                                        </Link.Menu>
+                                        <Link.Preview />
+                                    </Link>
+                                );
+                            })}
+                        </Animated.View>
+                    ) : (
+                        <EmptyState
+                            icon="hourglass-empty"
+                            title="No entries unlocked yet"
+                            description={`${partner.name}'s entries will unlock every Sunday. Check back soon!`}
+                        />
+                    )}
+                </Animated.View>
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = {
+    // New Hero Styles
+    heroGlow: {
+        position: 'absolute',
+        top: -100,
+        right: -100,
+        width: 400,
+        height: 400,
+        borderRadius: BorderRadius.full,
+        backgroundColor: '#FB7185', // Pink glow
+        opacity: 0.3,
+        transform: [{ scale: 1.5 }],
+    } as ViewStyle,
+    heroBgIcon: {
+        position: 'absolute',
+        bottom: -50,
+        right: -50,
+        opacity: 0.1,
+        transform: [{ rotate: '-15deg' }],
+    } as TextStyle,
+
     header: {
         paddingHorizontal: Spacing[5],
         paddingVertical: Spacing[3],
@@ -346,7 +372,7 @@ const styles = {
         fontWeight: '700',
     } as TextStyle,
     unlockBadge: {
-        backgroundColor: `${Colors.secondary.DEFAULT}1A`,
+        backgroundColor: 'rgba(255,255,255,0.2)',
         paddingHorizontal: Spacing[2],
         paddingVertical: 2,
         borderRadius: BorderRadius.full,
@@ -355,7 +381,7 @@ const styles = {
     unlockBadgeText: {
         fontSize: FontSizes.xs,
         fontWeight: '700',
-        color: Colors.secondary.DEFAULT,
+        color: '#FFFFFF',
     } as TextStyle,
     countBadge: {
         backgroundColor: `${Colors.primary.DEFAULT}1A`,

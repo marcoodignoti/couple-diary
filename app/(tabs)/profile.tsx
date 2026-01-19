@@ -296,7 +296,7 @@ export default function ProfileScreen() {
                     </View>
                 </View>
             </View>
-        </ScrollView>
+        </ScrollView >
     );
 }
 
@@ -453,21 +453,6 @@ const styles = {
         color: '#ef4444',
         fontWeight: '500',
         fontSize: FontSizes.base,
-    } as TextStyle,
-    debugButton: {
-        marginTop: Spacing[8],
-        alignSelf: 'center',
-        paddingHorizontal: Spacing[4],
-        paddingVertical: Spacing[2],
-        borderRadius: BorderRadius.full,
-        opacity: 0.5,
-    } as ViewStyle,
-    debugText: {
-        fontSize: 10,
-        color: Colors.stone[400],
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-        fontWeight: '700',
     } as TextStyle,
     footer: {
         marginTop: Spacing[4],

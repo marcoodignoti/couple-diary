@@ -5,23 +5,23 @@
 
 export const Colors = {
   primary: {
-    DEFAULT: '#C0847C', // Muted Terracotta
-    dark: '#A06B63',    // Darker Terracotta
+    DEFAULT: '#E879A1', // Vibrant Rose Pink (user)
+    dark: '#D45D89',    // Darker Rose
   },
   secondary: {
-    DEFAULT: '#D4AF37', // Warm Gold
+    DEFAULT: '#FF8566', // Vibrant Coral (partner)
   },
   background: {
-    light: '#F5F2EA', // Creamy Beige
-    dark: '#1C1917',  // Warm Dark Grey
+    light: '#FFFFFF', // Pure White
+    dark: '#000000',  // Pure Black
   },
   surface: {
     light: '#FFFFFF',
-    dark: '#292524',
+    dark: '#1C1917',
   },
   text: {
-    light: '#4A403A',
-    dark: '#E7E5E4',
+    light: '#1C1917', // Nearly Black
+    dark: '#FFFFFF',  // Pure White
   },
   espresso: '#3E2723',
   white: '#FFFFFF',
@@ -78,7 +78,7 @@ export const BorderRadius = {
   md: 12,
   lg: 16,
   xl: 24,      // 1.5rem
-  '2xl': 32,   // 2rem
+  '2xl': 32,   // 2rem - Standard for Cards
   '3xl': 40,   // 2.5rem
   full: 9999,
 } as const;

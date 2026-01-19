@@ -1,11 +1,11 @@
-import { Icon } from '../../components/ui/Icon';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Alert, Clipboard, Image, ImageStyle, ScrollView, Share, Text, TouchableOpacity, View, ViewStyle, TextStyle } from 'react-native';
+import { Alert, Clipboard, ImageStyle, ScrollView, Share, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, useSharedValue, withRepeat, withSpring } from 'react-native-reanimated';
+import { Icon } from '../../components/ui/Icon';
 
+import { BorderRadius, Colors, FontSizes, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../hooks/useTheme';
-import { Colors, BorderRadius, FontSizes, Spacing, Shadows } from '../../constants/theme';
 import { useAuthStore } from '../../stores/authStore';
 
 export default function OnboardingInvite() {
@@ -53,89 +53,99 @@ export default function OnboardingInvite() {
     };
 
     return (
-        <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{ flex: 1, backgroundColor: colors.background }}
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: Spacing[6] }}
-        >
-            {/* Header Section */}
-            <View style={styles.headerSection}>
-                <View style={[styles.imageContainer, { boxShadow: Shadows.sm } as ViewStyle]}>
-                    <Image
-                        source={{ uri: "https://images.unsplash.com/photo-1621600411688-4be93cd68504?q=80&w=2080&auto=format&fit=crop" }}
-                        style={styles.headerImage}
-                        resizeMode="cover"
-                    />
-                    <View style={[styles.imageOverlay, { backgroundColor: isDark ? Colors.background.dark : Colors.background.light }]} />
+        <View style={{ flex: 1, backgroundColor: Colors.secondary.DEFAULT }}>
+            {/* Hero Background Elements */}
+            <View style={styles.heroGlow} />
+            <Icon name="people" size={300} color="#FFFFFF" style={styles.heroBgIcon as any} />
+
+            <ScrollView
+                contentInsetAdjustmentBehavior="automatic"
+                style={{ flex: 1 }}
+                contentContainerStyle={{ flexGrow: 1, paddingBottom: Spacing[6] }}
+            >
+                {/* Header Section */}
+                <View style={styles.headerSection}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                        <Icon name="arrow-back" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+
+                    <Animated.View entering={FadeInDown.delay(100)} style={{ alignItems: 'center' }}>
+                        <View style={styles.iconCircle}>
+                            <Icon name="favorite" size={40} color={Colors.secondary.DEFAULT} />
+                        </View>
+                        <Text selectable style={[styles.headerTitle, { color: '#FFFFFF' }]}>
+                            Collega i vostri cuori
+                        </Text>
+                        <Text selectable style={[styles.headerSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>
+                            Condividi questo codice con il tuo partner per iniziare il vostro diario condiviso.
+                        </Text>
+                    </Animated.View>
                 </View>
 
-                <Text selectable style={[styles.headerTitle, { color: isDark ? Colors.white : Colors.text.light }]}>
-                    Collega i vostri cuori
-                </Text>
-                <Text selectable style={[styles.headerSubtitle, { color: isDark ? 'rgba(255,255,255,0.7)' : `${Colors.text.light}B3` }]}>
-                    Condividi questo codice con il tuo partner per iniziare il vostro diario condiviso.
-                </Text>
-            </View>
-
-            {/* Main Card Section */}
-            <View style={styles.mainSection}>
-                {/* Code Card */}
-                <Animated.View entering={FadeInDown.delay(200)} style={styles.cardWrapper}>
-                    <View style={[
-                        styles.card,
-                        {
-                            backgroundColor: isDark ? Colors.surface.dark : Colors.white,
-                            borderColor: isDark ? Colors.stone[800] : Colors.stone[200],
-                            boxShadow: Shadows.sm,
-                        } as ViewStyle
-                    ]}>
-                        <View style={styles.cardContent}>
-                            <Text style={[styles.cardLabel, { color: isDark ? 'rgba(255,255,255,0.5)' : `${Colors.text.light}80` }]}>
-                                Il tuo Codice Unico
-                            </Text>
-
-                            <View style={styles.codeContainer}>
-                                <Text selectable style={styles.codeText}>
-                                    {pairingCode}
+                {/* Main Card Section */}
+                <View style={styles.mainSection}>
+                    {/* Code Card */}
+                    <Animated.View entering={FadeInDown.delay(200)} style={styles.cardWrapper}>
+                        <View style={[
+                            styles.card,
+                            {
+                                backgroundColor: '#FFFFFF',
+                                borderColor: 'transparent',
+                                boxShadow: Shadows.lg,
+                            } as ViewStyle
+                        ]}>
+                            <View style={styles.cardContent}>
+                                <Text style={[styles.cardLabel, { color: Colors.stone[400] }]}>
+                                    Il tuo Codice Unico
                                 </Text>
+
+                                <View style={styles.codeContainer}>
+                                    <Animated.Text selectable style={[styles.codeText, animatedStyle]}>
+                                        {pairingCode}
+                                    </Animated.Text>
+                                </View>
                             </View>
+
+                            <TouchableOpacity
+                                onPress={copyToClipboard}
+                                style={[styles.copyButton, { backgroundColor: Colors.stone[100] }]}
+                            >
+                                <Icon name="content-copy" size={20} color={Colors.secondary.DEFAULT} />
+                                <Text style={styles.copyButtonText}>Copia Codice</Text>
+                            </TouchableOpacity>
                         </View>
+                    </Animated.View>
+
+                    {/* Actions */}
+                    <View style={styles.actionsContainer}>
+                        <TouchableOpacity
+                            activeOpacity={0.9}
+                            onPress={shareCode}
+                            style={[
+                                styles.shareButton,
+                                {
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(255,255,255,0.3)',
+                                } as ViewStyle
+                            ]}
+                        >
+                            <Icon name="share" size={24} color={Colors.white} style={{ marginRight: Spacing[2] }} />
+                            <Text style={styles.shareButtonText}>Condividi Link</Text>
+                        </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={copyToClipboard}
-                            style={[styles.copyButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : Colors.background.light }]}
+                            onPress={() => router.push('/onboarding/enter-code' as any)}
+                            style={styles.secondaryButton}
                         >
-                            <Icon name="content-copy" size={20} color={Colors.primary.DEFAULT} />
-                            <Text style={styles.copyButtonText}>Copia Codice</Text>
+                            <Text style={[styles.secondaryButtonText, { color: 'rgba(255,255,255,0.8)' }]}>
+                                Hai già un codice? Inseriscilo qui
+                            </Text>
                         </TouchableOpacity>
                     </View>
-                </Animated.View>
-
-                {/* Actions */}
-                <View style={styles.actionsContainer}>
-                    <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={shareCode}
-                        style={[
-                            styles.shareButton,
-                            { boxShadow: Shadows.soft } as ViewStyle
-                        ]}
-                    >
-                        <Icon name="share" size={24} color={Colors.white} style={{ marginRight: Spacing[2] }} />
-                        <Text style={styles.shareButtonText}>Condividi Link</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onPress={() => router.push('/onboarding/enter-code' as any)}
-                        style={styles.secondaryButton}
-                    >
-                        <Text style={[styles.secondaryButtonText, { color: isDark ? 'rgba(255,255,255,0.6)' : `${Colors.text.light}99` }]}>
-                            Hai già un codice? Inseriscilo qui
-                        </Text>
-                    </TouchableOpacity>
                 </View>
-            </View>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 
@@ -284,4 +294,41 @@ const styles = {
         fontSize: FontSizes.sm,
         fontWeight: '700',
     } as TextStyle,
+
+    // New Hero Styles
+    heroGlow: {
+        position: 'absolute',
+        top: -100,
+        right: -100,
+        width: 400,
+        height: 400,
+        borderRadius: BorderRadius.full,
+        backgroundColor: '#F472B6', // Pink Glow
+        opacity: 0.3,
+        transform: [{ scale: 1.5 }],
+    } as ViewStyle,
+    heroBgIcon: {
+        position: 'absolute',
+        bottom: -50,
+        right: -50,
+        opacity: 0.1,
+        transform: [{ rotate: '-15deg' }],
+    } as TextStyle,
+    backButton: {
+        position: 'absolute',
+        top: Spacing[6],
+        left: Spacing[4],
+        padding: Spacing[2],
+        zIndex: 20,
+    } as ViewStyle,
+    iconCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: BorderRadius.full,
+        backgroundColor: '#FFFFFF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: Spacing[4],
+        boxShadow: Shadows.md,
+    } as ViewStyle,
 };

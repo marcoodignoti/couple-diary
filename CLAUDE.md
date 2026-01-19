@@ -27,28 +27,36 @@ eas build --platform android --profile development
 
 ### Tech Stack
 - **Framework**: Expo SDK 54 with React Native 0.81, expo-router for file-based routing
-- **Styling**: NativeWind (TailwindCSS for React Native) with custom theme in `tailwind.config.js`
-- **State**: Zustand stores in `stores/` directory
+- **State**: Zustand stores in `stores/`, React Query for server state
 - **Backend**: Supabase (auth + database), configured via `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` env vars
 - **Auth Storage**: expo-secure-store on native, localStorage on web
 
 ### Key Directories
-- `app/` - Expo Router screens using file-based routing
-  - `(auth)/` - Login, register, pairing flows
-  - `(tabs)/` - Main app tabs (diary, calendar, profile)
+- `app/` - Expo Router screens using file-based routing (typed routes enabled)
+  - `(auth)/` - Login, register flows
+  - `(tabs)/` - Main app tabs (diary, calendar, profile, insight)
   - `entry/` - Entry viewing/editing (modal presentation)
-  - `onboarding/` - First-time user flows
+  - `onboarding/` - First-time user flows (welcome, pairing, celebration)
 - `stores/` - Zustand state management
   - `authStore.ts` - User auth, profile, and partner pairing
   - `entryStore.ts` - Diary entries CRUD and partner entries
-- `services/` - Supabase API interactions
+- `services/` - API and device integrations
+  - `supabase.ts` - Supabase client configuration
+  - `pairingService.ts` - Partner pairing code logic
+  - `biometricService.ts` - Biometric authentication (Face ID, fingerprint)
+  - `notificationService.ts` - Push notifications
+  - `photoService.ts` - Image picking and upload
+  - `security.ts` - Screen capture prevention
 - `components/ui/` - Reusable UI components
 - `components/web/` - Web-specific components (landing page, sidebar)
+- `types/` - TypeScript type definitions
+- `utils/` - Utility functions (dates, storage, constants)
 
 ### Core Concepts
 - **Entry unlock dates**: Normal entries unlock on the coming Sunday; special-date entries unlock on the specified date. Logic is in `utils/dates.ts`.
 - **Partner pairing**: Users generate/enter pairing codes to connect accounts. Handled in `authStore` and `services/pairingService.ts`.
 - **Platform detection**: Use `Platform.OS` to conditionally render. Web has its own layout components in `components/web/`.
+- **Moods**: Entries can have one of 8 moods: happy, love, grateful, peaceful, excited, sad, anxious, tired.
 
 ### Database Schema (Supabase)
 - `profiles` - User accounts with `partner_id` for linking couples
@@ -57,10 +65,10 @@ eas build --platform android --profile development
 
 ## Configuration Notes
 
-- Babel requires `react-native-reanimated/plugin` to be last in plugins array
-- NativeWind preset must be included in both `babel.config.js` and `tailwind.config.js`
-- Dark mode is class-based (`darkMode: "class"` in Tailwind config)
-- Custom colors: `primary` (terracotta), `secondary` (gold), `background`, `surface`, `text` with light/dark variants
+- App uses React Compiler (`reactCompiler: true` in app.json experiments)
+- Typed routes enabled (`typedRoutes: true`) for type-safe navigation
+- `patch-package` runs on postinstall for any local package patches
+- Deep linking scheme: `couplediary://`
 
 ## Environment Variables
 

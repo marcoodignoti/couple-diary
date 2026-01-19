@@ -21,14 +21,6 @@ export default function TabLayout() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="insight">
-        <Label>Insight</Label>
-        <Icon
-          sf="chart.bar.fill"
-          androidSrc={<VectorIcon family={MaterialIcons} name="bar-chart" />}
-        />
-      </NativeTabs.Trigger>
-
       <NativeTabs.Trigger name="profile">
         <Label>Profilo</Label>
         <Icon

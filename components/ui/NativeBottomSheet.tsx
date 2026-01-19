@@ -1,8 +1,9 @@
+import type { BottomSheetBackdropProps, BottomSheetBackgroundProps, BottomSheetProps } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo } from 'react';
-import { Platform, Pressable, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView, useBottomSheetDynamicSnapPoints } from '@gorhom/bottom-sheet';
-import type { BottomSheetBackdropProps, BottomSheetProps } from '@gorhom/bottom-sheet';
-import { Colors, BorderRadius, Spacing, FontSizes, Shadows } from '../../constants/theme';
+import { Pressable, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
 import { useTheme } from '../../hooks/useTheme';
 import { Icon } from './Icon';
 
@@ -99,7 +100,7 @@ export const NativeBottomSheet = forwardRef<BottomSheet, NativeBottomSheetProps>
       showCloseButton = true,
       onClose,
       snapPoints: customSnapPoints,
-      initialSnapIndex = 0,
+      initialSnapIndex = -1,
       enableDynamicSizing = false,
       backgroundStyle = 'default',
       enablePanDownToClose = true,
@@ -141,6 +142,34 @@ export const NativeBottomSheet = forwardRef<BottomSheet, NativeBottomSheetProps>
       [onClose]
     );
 
+    // Solid background (Minimalist Design Option A)
+    const renderBackground = useCallback(
+      (props: BottomSheetBackgroundProps) => {
+        const style = {
+          backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+          ...StyleSheet.flatten(props.style),
+        };
+
+        // Remove borderRadius from props if we want to control it, generally BottomSheet handles it.
+        // We ensure solid background.
+
+        return (
+          <Animated.View
+            {...props}
+            style={[
+              style,
+              {
+                backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+                borderTopLeftRadius: 16,
+                borderTopRightRadius: 16
+              },
+            ]}
+          />
+        );
+      },
+      [isDark]
+    );
+
     // Background style based on theme
     const backgroundStyles = useMemo(() => {
       if (backgroundStyle === 'transparent') {
@@ -149,17 +178,16 @@ export const NativeBottomSheet = forwardRef<BottomSheet, NativeBottomSheetProps>
 
       return {
         backgroundColor: isDark ? Colors.stone[900] : Colors.white,
-        ...Platform.select({
-          ios: {
+        ...(process.env.EXPO_OS === 'ios'
+          ? {
             shadowColor: '#000',
             shadowOffset: { width: 0, height: -4 },
             shadowOpacity: isDark ? 0.5 : 0.15,
             shadowRadius: 16,
-          },
-          android: {
+          }
+          : {
             elevation: 16,
-          },
-        }),
+          }),
       };
     }, [isDark, backgroundStyle]);
 
@@ -180,8 +208,8 @@ export const NativeBottomSheet = forwardRef<BottomSheet, NativeBottomSheetProps>
         index={initialSnapIndex}
         enablePanDownToClose={enablePanDownToClose}
         backdropComponent={renderBackdrop}
+        backgroundComponent={renderBackground}
         handleIndicatorStyle={handleIndicatorStyle}
-        backgroundStyle={backgroundStyles}
         onChange={handleSheetChanges}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
@@ -287,5 +315,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing[6],
     paddingTop: Spacing[4],
     paddingBottom: Spacing[8],
+  } as ViewStyle,
+  blurBackground: {
+    overflow: 'hidden',
   } as ViewStyle,
 });

@@ -1,5 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { SymbolView, SFSymbol } from 'expo-symbols';
+import { SFSymbol, SymbolView } from 'expo-symbols';
 import React from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 
@@ -12,11 +12,13 @@ const SF_SYMBOL_MAP: Record<string, SFSymbol> = {
     'arrow-forward': 'chevron.right',
     'arrow-forward-ios': 'chevron.right',
     'close': 'xmark',
+    'home': 'house.fill',
 
     // Actions
     'create': 'square.and.pencil',
     'edit': 'pencil',
     'edit-off': 'pencil.slash',
+    'delete': 'trash',
     'delete-outline': 'trash',
     'check': 'checkmark',
     'content-copy': 'doc.on.doc',
@@ -53,14 +55,18 @@ const SF_SYMBOL_MAP: Record<string, SFSymbol> = {
     'sentiment-dissatisfied': 'face.dashed',
     'bedtime': 'moon.zzz.fill',
 
-    // Misc
+    // Calendar/Date icons
+    'today': 'calendar.day.timeline.left',
+    'weekend': 'calendar.badge.clock',
+    'event': 'calendar.badge.plus',
+    'calendar-month': 'calendar',
     'hourglass-empty': 'hourglass',
     'circle': 'circle.fill',
     'calendar-today': 'calendar',
     'bar-chart': 'chart.bar.fill',
 };
 
-export type IconName = keyof typeof MaterialIcons.glyphMap;
+export type IconName = keyof typeof MaterialIcons.glyphMap | string;
 
 interface IconProps {
     name: IconName;
@@ -88,7 +94,7 @@ export function Icon({ name, size = 24, color = '#000', style }: IconProps) {
     // Fallback to MaterialIcons
     return (
         <MaterialIcons
-            name={name}
+            name={name as any}
             size={size}
             color={color}
             style={style as any}

@@ -3,30 +3,38 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, ImageStyle, KeyboardAvoidingView, ScrollView, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
+import { GlassCard } from '../../components/ui/GlassCard';
 import { Icon, IconName } from '../../components/ui/Icon';
 import { BorderRadius, Colors, FontSizes, Shadows, Spacing } from '../../constants/theme';
+import { useDeleteEntry, useMyEntries, useUpdateEntry } from '../../hooks/useEntryQueries';
 import { useStatusBarPadding } from '../../hooks/useStatusBarPadding';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore } from '../../stores/authStore';
-import { useEntryStore } from '../../stores/entryStore';
 import type { Mood } from '../../types';
 
 const MOODS: { value: Mood; icon: IconName; color: string; label: string }[] = [
-    { value: 'happy', icon: 'sentiment-satisfied', color: '#D4AF37', label: 'Felice' },
-    { value: 'love', icon: 'favorite', color: '#C0847C', label: 'Amato' },
+    { value: 'happy', icon: 'sentiment-satisfied', color: '#E879A1', label: 'Felice' }, // Rose
+    { value: 'love', icon: 'favorite', color: '#FF8566', label: 'Amato' }, // Coral
     { value: 'grateful', icon: 'volunteer-activism', color: '#14b8a6', label: 'Grato' },
     { value: 'peaceful', icon: 'spa', color: '#60a5fa', label: 'Sereno' },
     { value: 'excited', icon: 'celebration', color: '#f59e0b', label: 'Emozionato' },
-    { value: 'sad', icon: 'sentiment-dissatisfied', color: '#64748b', label: 'Triste' },
-    { value: 'anxious', icon: 'psychology', color: '#8b5cf6', label: 'Ansioso' },
+    { value: 'sad', icon: 'sentiment-dissatisfied', color: '#94a3b8', label: 'Triste' },
+    { value: 'anxious', icon: 'psychology', color: '#a78bfa', label: 'Ansioso' },
     { value: 'tired', icon: 'bedtime', color: '#a8a29e', label: 'Stanco' },
+    { value: 'calm', icon: 'spa', color: '#60a5fa', label: 'Calmo' },
+    { value: 'angry', icon: 'bolt', color: '#ef4444', label: 'Arrabbiato' },
 ];
 
 export default function EntryDetailScreen() {
-    const { id } = useLocalSearchParams<{ id: string }>();
+    const { id, theme } = useLocalSearchParams<{ id: string; theme?: string }>();
     const router = useRouter();
     const { user } = useAuthStore();
-    const { entries, updateEntry, deleteEntry, isLoading } = useEntryStore();
+    const { data: entries = [] } = useMyEntries(user?.id);
+    const updateEntryMutation = useUpdateEntry();
+    const deleteEntryMutation = useDeleteEntry();
+
+    // Derived loading state
+    const isLoading = updateEntryMutation.isPending || deleteEntryMutation.isPending;
     const { isDark, colors } = useTheme();
     const statusBarPadding = useStatusBarPadding();
 
@@ -82,7 +90,11 @@ export default function EntryDetailScreen() {
         }
 
         try {
-            await updateEntry(entry.id, editContent.trim(), editMood);
+            await updateEntryMutation.mutateAsync({
+                entryId: entry.id,
+                content: editContent.trim(),
+                mood: editMood
+            });
             setIsEditing(false);
         } catch (error) {
             Alert.alert('Errore', 'Impossibile salvare i cambiamenti. Riprova.');
@@ -100,8 +112,13 @@ export default function EntryDetailScreen() {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            await deleteEntry(entry.id);
-                            router.back();
+                            if (user?.id) {
+                                await deleteEntryMutation.mutateAsync({
+                                    entryId: entry.id,
+                                    userId: user.id
+                                });
+                                router.back();
+                            }
                         } catch (error) {
                             Alert.alert('Errore', 'Impossibile eliminare il ricordo. Riprova.');
                         }
@@ -117,215 +134,225 @@ export default function EntryDetailScreen() {
         setIsEditing(false);
     };
 
+    // Theme Logic
+    const isHistoryTheme = theme === 'history';
+    const activeBackgroundColor = isHistoryTheme ? '#D97706' : colors.background;
+    const activeTextColor = isHistoryTheme ? '#FFFFFF' : (isDark ? Colors.white : Colors.text.light);
+    const activeSubTextColor = isHistoryTheme ? 'rgba(255,255,255,0.8)' : Colors.stone[500];
+
     return (
-        <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{ flex: 1, backgroundColor: colors.background }}
-            keyboardShouldPersistTaps="handled"
-        >
-            <KeyboardAvoidingView
-                behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'}
+        <View style={{ flex: 1, backgroundColor: activeBackgroundColor }}>
+            {/* Hero Background Elements (Only for History Theme) */}
+            {isHistoryTheme && (
+                <>
+                    <View style={styles.heroGlow} />
+                    <Icon name="history" size={300} color="#FFFFFF" style={styles.heroBgIcon as any} />
+                </>
+            )}
+
+            <ScrollView
+                contentInsetAdjustmentBehavior="automatic"
                 style={{ flex: 1 }}
+                keyboardShouldPersistTaps="handled"
             >
-                {/* Header */}
-                <View style={[styles.header, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100], paddingTop: statusBarPadding }]}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.headerButton} activeOpacity={0.7}>
-                        <Icon name="arrow-back" size={24} color={isDark ? Colors.white : Colors.text.light} />
-                    </TouchableOpacity>
-
-                    <Text style={[styles.headerTitle, { color: isDark ? Colors.white : Colors.text.light }]}>
-                        {isEditing ? 'Modifica Ricordo' : 'Dettagli Ricordo'}
-                    </Text>
-
-                    {isOwn && !isEditing && (
-                        <TouchableOpacity onPress={handleEdit} style={styles.headerButton} activeOpacity={0.7}>
-                            <Icon name="edit" size={22} color={Colors.primary.DEFAULT} />
+                <KeyboardAvoidingView
+                    behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'}
+                    style={{ flex: 1 }}
+                >
+                    {/* Header */}
+                    <View style={[styles.header, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100], paddingTop: statusBarPadding }]}>
+                        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton} activeOpacity={0.7}>
+                            <Icon name="arrow-back" size={24} color={activeTextColor} />
                         </TouchableOpacity>
-                    )}
-                    {isEditing && (
-                        <TouchableOpacity onPress={handleCancelEdit} style={styles.headerButton} activeOpacity={0.7}>
-                            <Icon name="close" size={24} color={Colors.stone[400]} />
-                        </TouchableOpacity>
-                    )}
-                    {!isOwn && <View style={styles.headerButton} />}
-                </View>
 
-                <View style={styles.content}>
-                    {/* Date & Time Header */}
-                    <Animated.View entering={FadeInDown.duration(400)} style={styles.dateSection}>
-                        <Text selectable style={[styles.dateText, { color: isDark ? Colors.white : Colors.text.light }]}>
-                            {formatDate(entry.created_at)}
+                        <Text style={[styles.headerTitle, { color: activeTextColor }]}>
+                            {isEditing ? 'Modifica Ricordo' : 'Dettagli Ricordo'}
                         </Text>
-                        <Text selectable style={styles.timeText}>{formatTime(entry.created_at)}</Text>
-                    </Animated.View>
 
-                    {/* Photo */}
-                    {entry.photo_url && (
-                        <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.photoSection}>
-                            <View style={[
-                                styles.photoContainer,
-                                {
-                                    borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
-                                    backgroundColor: isDark ? Colors.stone[800] : Colors.stone[100],
-                                    boxShadow: Shadows.sm,
-                                } as ViewStyle
-                            ]}>
-                                <Image
-                                    source={{ uri: entry.photo_url }}
-                                    style={styles.photo}
-                                    resizeMode="cover"
-                                />
-                            </View>
-                        </Animated.View>
-                    )}
-
-                    {/* Mood Badge */}
-                    {!isEditing && moodData && (
-                        <Animated.View entering={FadeInDown.delay(200).duration(400)} style={styles.moodSection}>
-                            <View style={[
-                                styles.moodBadge,
-                                {
-                                    backgroundColor: isDark ? Colors.surface.dark : Colors.white,
-                                    borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
-                                }
-                            ]}>
-                                <Icon name={moodData.icon} size={28} color={moodData.color} />
-                                <Text style={[styles.moodText, { color: isDark ? Colors.white : Colors.text.light }]}>Mi sento {moodData.label}</Text>
-                            </View>
-                        </Animated.View>
-                    )}
-
-                    {/* Content */}
-                    {isEditing ? (
-                        <Animated.View entering={FadeIn.duration(300)} style={styles.editSection}>
-                            {/* Mood Selector */}
-                            <Text style={[styles.editLabel, { color: Colors.stone[500] }]}>Umore</Text>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.moodScrollView}>
-                                <View style={styles.moodList}>
-                                    {MOODS.map((mood) => (
-                                        <TouchableOpacity
-                                            key={mood.value}
-                                            onPress={() => setEditMood(editMood === mood.value ? null : mood.value)}
-                                            style={[
-                                                styles.moodItem,
-                                                {
-                                                    backgroundColor: editMood === mood.value
-                                                        ? `${Colors.primary.DEFAULT}1A`
-                                                        : isDark ? Colors.surface.dark : Colors.white,
-                                                    borderColor: editMood === mood.value
-                                                        ? Colors.primary.DEFAULT
-                                                        : isDark ? Colors.stone[700] : Colors.stone[200],
-                                                }
-                                            ]}
-                                            activeOpacity={0.7}
-                                        >
-                                            <Icon
-                                                name={mood.icon}
-                                                size={24}
-                                                color={editMood === mood.value ? mood.color : Colors.stone[400]}
-                                            />
-                                            <Text style={[
-                                                styles.moodItemLabel,
-                                                { color: editMood === mood.value ? (isDark ? Colors.white : Colors.text.light) : Colors.stone[400] }
-                                            ]}>
-                                                {mood.label}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </ScrollView>
-
-                            {/* Content Editor */}
-                            <Text style={[styles.editLabel, { color: Colors.stone[500] }]}>Pensiero</Text>
-                            <View style={[
-                                styles.editorCard,
-                                {
-                                    backgroundColor: isDark ? Colors.surface.dark : Colors.white,
-                                    borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
-                                }
-                            ]}>
-                                <TextInput
-                                    multiline
-                                    textAlignVertical="top"
-                                    placeholder="Scrivi i tuoi pensieri..."
-                                    placeholderTextColor={Colors.stone[400]}
-                                    style={[styles.editorInput, { color: isDark ? Colors.white : Colors.text.light }]}
-                                    value={editContent}
-                                    onChangeText={setEditContent}
-                                    editable={!isLoading}
-                                />
-                            </View>
-                        </Animated.View>
-                    ) : (
-                        <Animated.View entering={FadeInDown.delay(200).duration(400)}>
-                            <View style={[
-                                styles.contentCard,
-                                {
-                                    backgroundColor: isDark ? Colors.surface.dark : Colors.white,
-                                    borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
-                                    boxShadow: Shadows.sm,
-                                } as ViewStyle
-                            ]}>
-                                <Text selectable style={[styles.contentText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>
-                                    {entry.content}
-                                </Text>
-                            </View>
-                        </Animated.View>
-                    )}
-
-                    {/* Special Date Badge */}
-                    {entry.is_special_date && !isEditing && (
-                        <Animated.View entering={FadeInDown.delay(300).duration(400)} style={styles.specialSection}>
-                            <View style={styles.specialBadge}>
-                                <Icon name="star" size={20} color={Colors.secondary.DEFAULT} />
-                                <Text style={styles.specialText}>Occasione Speciale</Text>
-                            </View>
-                        </Animated.View>
-                    )}
-
-                    {/* Delete Button (when not editing) */}
-                    {isOwn && !isEditing && (
-                        <Animated.View entering={FadeInDown.delay(400).duration(400)} style={styles.deleteSection}>
-                            <TouchableOpacity
-                                onPress={handleDelete}
-                                style={[styles.deleteButton, { borderColor: isDark ? '#7f1d1d' : '#fecaca' }]}
-                                activeOpacity={0.7}
-                            >
-                                <Icon name="delete-outline" size={20} color="#ef4444" />
-                                <Text style={styles.deleteText}>Elimina Ricordo</Text>
+                        {isOwn && !isEditing && (
+                            <TouchableOpacity onPress={handleEdit} style={styles.headerButton} activeOpacity={0.7}>
+                                <Icon name="edit" size={22} color={isHistoryTheme ? '#FFFFFF' : Colors.primary.DEFAULT} />
                             </TouchableOpacity>
-                        </Animated.View>
-                    )}
-                </View>
-
-                {/* Save Button (when editing) */}
-                {isEditing && (
-                    <View style={[styles.saveSection, { backgroundColor: colors.background, borderTopColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}>
-                        <TouchableOpacity
-                            activeOpacity={0.9}
-                            onPress={handleSave}
-                            disabled={isLoading || !editContent.trim()}
-                            style={[
-                                styles.saveButton,
-                                {
-                                    backgroundColor: editContent.trim() ? Colors.primary.DEFAULT : Colors.stone[300],
-                                    boxShadow: editContent.trim() ? Shadows.lg : 'none',
-                                } as ViewStyle
-                            ]}
-                        >
-                            {isLoading ? (
-                                <ActivityIndicator color={Colors.white} />
-                            ) : (
-                                <>
-                                    <Icon name="check" size={24} color={Colors.white} />
-                                    <Text style={styles.saveButtonText}>Salva Modifiche</Text>
-                                </>
-                            )}
-                        </TouchableOpacity>
+                        )}
+                        {isEditing && (
+                            <TouchableOpacity onPress={handleCancelEdit} style={styles.headerButton} activeOpacity={0.7}>
+                                <Icon name="close" size={24} color={activeSubTextColor} />
+                            </TouchableOpacity>
+                        )}
+                        {!isOwn && <View style={styles.headerButton} />}
                     </View>
-                )}
-            </KeyboardAvoidingView>
-        </ScrollView>
+
+                    <View style={styles.content}>
+                        {/* Date & Time Header */}
+                        <Animated.View entering={FadeInDown.duration(400)} style={styles.dateSection}>
+                            <Text selectable style={[styles.dateText, { color: activeTextColor }]}>
+                                {formatDate(entry.created_at)}
+                            </Text>
+                            <Text selectable style={[styles.timeText, { color: activeSubTextColor }]}>{formatTime(entry.created_at)}</Text>
+                        </Animated.View>
+
+                        {/* Photo */}
+                        {entry.photo_url && (
+                            <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.photoSection}>
+                                <View style={[
+                                    styles.photoContainer,
+                                    {
+                                        borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
+                                        backgroundColor: isDark ? Colors.stone[800] : Colors.stone[100],
+                                        boxShadow: Shadows.sm,
+                                    } as ViewStyle
+                                ]}>
+                                    <Image
+                                        source={{ uri: entry.photo_url }}
+                                        style={styles.photo}
+                                        resizeMode="cover"
+                                    />
+                                </View>
+                            </Animated.View>
+                        )}
+
+                        {/* Mood Badge */}
+                        {!isEditing && moodData && (
+                            <Animated.View entering={FadeInDown.delay(200).duration(400)} style={styles.moodSection}>
+                                <View style={[
+                                    styles.moodBadge,
+                                    {
+                                        backgroundColor: isHistoryTheme ? 'rgba(255,255,255,0.2)' : (isDark ? Colors.surface.dark : Colors.white),
+                                        borderColor: isHistoryTheme ? 'rgba(255,255,255,0.3)' : (isDark ? Colors.stone[800] : Colors.stone[100]),
+                                    }
+                                ]}>
+                                    <Icon name={moodData.icon} size={28} color={isHistoryTheme ? '#FFFFFF' : moodData.color} />
+                                    <Text style={[styles.moodText, { color: activeTextColor }]}>Mi sento {moodData.label}</Text>
+                                </View>
+                            </Animated.View>
+                        )}
+
+
+                        {/* Content */}
+                        {isEditing ? (
+                            <Animated.View entering={FadeIn.duration(300)} style={styles.editSection}>
+                                {/* Mood Selector */}
+                                <Text style={[styles.editLabel, { color: activeSubTextColor }]}>Umore</Text>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.moodScrollView}>
+                                    <View style={styles.moodList}>
+                                        {MOODS.map((mood) => (
+                                            <TouchableOpacity
+                                                key={mood.value}
+                                                onPress={() => setEditMood(editMood === mood.value ? null : mood.value)}
+                                                style={[
+                                                    styles.moodItem,
+                                                    {
+                                                        backgroundColor: editMood === mood.value
+                                                            ? `${Colors.primary.DEFAULT}1A`
+                                                            : isDark ? Colors.surface.dark : Colors.white,
+                                                        borderColor: editMood === mood.value
+                                                            ? Colors.primary.DEFAULT
+                                                            : isDark ? Colors.stone[700] : Colors.stone[200],
+                                                    }
+                                                ]}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Icon
+                                                    name={mood.icon}
+                                                    size={24}
+                                                    color={editMood === mood.value ? mood.color : Colors.stone[400]}
+                                                />
+                                                <Text style={[
+                                                    styles.moodItemLabel,
+                                                    { color: editMood === mood.value ? (isDark ? Colors.white : Colors.text.light) : Colors.stone[400] }
+                                                ]}>
+                                                    {mood.label}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </ScrollView>
+
+                                {/* Content Editor */}
+                                <Text style={[styles.editLabel, { color: activeSubTextColor }]}>Pensiero</Text>
+                                <View style={[
+                                    styles.editorCard,
+                                    {
+                                        backgroundColor: isDark ? Colors.surface.dark : Colors.white,
+                                        borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
+                                    }
+                                ]}>
+                                    <TextInput
+                                        multiline
+                                        textAlignVertical="top"
+                                        placeholder="Scrivi i tuoi pensieri..."
+                                        placeholderTextColor={Colors.stone[400]}
+                                        style={[styles.editorInput, { color: isDark ? Colors.white : Colors.text.light }]}
+                                        value={editContent}
+                                        onChangeText={setEditContent}
+                                        editable={!isLoading}
+                                    />
+                                </View>
+                            </Animated.View>
+                        ) : (
+                            <Animated.View entering={FadeInDown.delay(200).duration(400)}>
+                                <GlassCard style={styles.entryGlassCard}>
+                                    <Text selectable style={[styles.contentText, { color: isHistoryTheme ? Colors.text.light : (isDark ? Colors.text.dark : Colors.text.light) }]}>
+                                        {entry.content}
+                                    </Text>
+                                </GlassCard>
+                            </Animated.View>
+                        )}
+
+                        {/* Special Date Badge */}
+                        {entry.is_special_date && !isEditing && (
+                            <Animated.View entering={FadeInDown.delay(300).duration(400)} style={styles.specialSection}>
+                                <View style={styles.specialBadge}>
+                                    <Icon name="star" size={20} color={Colors.secondary.DEFAULT} />
+                                    <Text style={styles.specialText}>Occasione Speciale</Text>
+                                </View>
+                            </Animated.View>
+                        )}
+
+                        {/* Delete Button (when not editing) */}
+                        {isOwn && !isEditing && (
+                            <Animated.View entering={FadeInDown.delay(400).duration(400)} style={styles.deleteSection}>
+                                <TouchableOpacity
+                                    onPress={handleDelete}
+                                    style={[styles.deleteButton, { borderColor: isDark ? '#7f1d1d' : '#fecaca', backgroundColor: isHistoryTheme ? 'rgba(255,255,255,0.8)' : undefined }]}
+                                    activeOpacity={0.7}
+                                >
+                                    <Icon name="delete-outline" size={20} color="#ef4444" />
+                                    <Text style={styles.deleteText}>Elimina Ricordo</Text>
+                                </TouchableOpacity>
+                            </Animated.View>
+                        )}
+                    </View>
+
+                    {/* Save Button (when editing) */}
+                    {isEditing && (
+                        <View style={[styles.saveSection, { backgroundColor: colors.background, borderTopColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}>
+                            <TouchableOpacity
+                                activeOpacity={0.9}
+                                onPress={handleSave}
+                                disabled={isLoading || !editContent.trim()}
+                                style={[
+                                    styles.saveButton,
+                                    {
+                                        backgroundColor: editContent.trim() ? Colors.primary.DEFAULT : Colors.stone[300],
+                                        boxShadow: editContent.trim() ? Shadows.lg : 'none',
+                                    } as ViewStyle
+                                ]}
+                            >
+                                {isLoading ? (
+                                    <ActivityIndicator color={Colors.white} />
+                                ) : (
+                                    <>
+                                        <Icon name="check" size={24} color={Colors.white} />
+                                        <Text style={styles.saveButtonText}>Salva Modifiche</Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </KeyboardAvoidingView>
+            </ScrollView>
+        </View>
     );
 }
 
@@ -410,6 +437,9 @@ const styles = {
     moodSection: {
         marginBottom: Spacing[6],
     } as ViewStyle,
+    voiceSection: {
+        marginBottom: Spacing[6],
+    } as ViewStyle,
     moodBadge: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -467,11 +497,7 @@ const styles = {
         minHeight: 200,
         textAlignVertical: 'top',
     } as TextStyle,
-    contentCard: {
-        borderRadius: 24,
-        borderCurve: 'continuous',
-        padding: Spacing[6],
-        borderWidth: 1,
+    entryGlassCard: {
         marginBottom: Spacing[6],
     } as ViewStyle,
     contentText: {
@@ -535,5 +561,25 @@ const styles = {
         color: Colors.white,
         fontWeight: '700',
         fontSize: FontSizes.lg,
+    } as TextStyle,
+
+    // New Hero Styles
+    heroGlow: {
+        position: 'absolute',
+        top: -100,
+        right: -100,
+        width: 400,
+        height: 400,
+        borderRadius: BorderRadius.full,
+        backgroundColor: '#F59E0B', // Amber Glow
+        opacity: 0.3,
+        transform: [{ scale: 1.5 }],
+    } as ViewStyle,
+    heroBgIcon: {
+        position: 'absolute',
+        bottom: -50,
+        right: -50,
+        opacity: 0.1,
+        transform: [{ rotate: '-15deg' }],
     } as TextStyle,
 };

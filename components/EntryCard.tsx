@@ -69,7 +69,7 @@ export function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: Ent
     // If href is provided, use Link with Preview and Context Menu
     if (href) {
         return (
-            <Link href={href as any} asChild>
+            <Link href={href as any}>
                 <Link.Trigger>
                     <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
                         {cardContent}
@@ -122,7 +122,7 @@ export function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: Ent
 const styles = StyleSheet.create({
     container: {
         backgroundColor: 'rgba(255, 255, 255, 0.85)',
-        borderRadius: 20,
+        borderRadius: 32,
         borderCurve: 'continuous',
         padding: 20,
         marginVertical: 8,

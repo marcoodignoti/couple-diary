@@ -1,7 +1,7 @@
-import React, { forwardRef, useCallback } from 'react';
-import { Platform, Pressable, Text, TextStyle, View, ViewStyle } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
-import { Colors, BorderRadius, FontSizes, Spacing } from '../../constants/theme';
+import React, { forwardRef, useCallback } from 'react';
+import { Pressable, Text, TextStyle, View, ViewStyle } from 'react-native';
+import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
 import { useTheme } from '../../hooks/useTheme';
 import { Icon } from './Icon';
 import { NativeBottomSheet } from './NativeBottomSheet';
@@ -104,14 +104,14 @@ export const ActionSheet = forwardRef<BottomSheet, ActionSheetProps>(
       const isDisabled = option.disabled;
 
       const textColor = isDestructive
-        ? Colors.red[500]
+        ? Colors.error
         : isDisabled
-        ? isDark
-          ? Colors.stone[600]
-          : Colors.stone[400]
-        : isDark
-        ? Colors.white
-        : Colors.text.light;
+          ? isDark
+            ? Colors.stone[600]
+            : Colors.stone[400]
+          : isDark
+            ? Colors.white
+            : Colors.text.light;
 
       return (
         <Pressable
@@ -158,7 +158,7 @@ export const ActionSheet = forwardRef<BottomSheet, ActionSheetProps>(
           {actionOptions.map((option, index) => renderOption(option, index))}
 
           {/* Separator before cancel (iOS pattern) */}
-          {cancelOption && Platform.OS === 'ios' && (
+          {cancelOption && process.env.EXPO_OS === 'ios' && (
             <View
               style={[
                 styles.separator,

@@ -17,14 +17,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.yourname.couplediary"
     },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#FAF9F6"
-      },
-      "edgeToEdgeEnabled": false,
-      "package": "com.yourname.couplediary"
-    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -42,8 +34,22 @@
     "plugins": [
       "expo-router",
       "@react-native-community/datetimepicker",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-local-authentication",
+      "expo-secure-store"
     ],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FAF9F6"
+      },
+      "edgeToEdgeEnabled": false,
+      "package": "com.yourname.couplediary",
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
+      ]
+    },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
@@ -58,7 +64,9 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/0331078e-0a7a-4909-8cfa-7bd7d9712341"
+      "url": "https://u.expo.dev/0331078e-0a7a-4909-8cfa-7bd7d9712341",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     }
   }
 }

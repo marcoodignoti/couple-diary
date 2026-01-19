@@ -4,64 +4,120 @@ import React, { useCallback, useState } from 'react';
 import { StatusBar, StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { LoginScreen } from '../../components/onboarding/LoginScreen';
-import { OnboardingSlide } from '../../components/onboarding/OnboardingSlide';
+import { AuthButton, AuthContainer, AuthInput } from '../../components/ui/AuthComponents';
 import { Icon } from '../../components/ui/Icon';
 import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
+import { useAuthStore } from '../../stores/authStore';
 
-// Full Italian translations from LanguageContext via implementation plan 
-const ONBOARDING_DATA = [
-    {
-        title: "La Distanza",
-        description: "Quando l'amore supera i chilometri. Scrivi messaggi segreti al tuo partner, anche quando siete lontani. Un ponte digitale tra i vostri cuori.",
-        image: require('../../assets/images/onboarding-distance.jpg'),
-    },
-    {
-        title: "Il Diario Segreto",
-        description: "Scrivi i tuoi pensieri più intimi. I messaggi restano nascosti nella nebbia fino al momento perfetto. Solo voi due saprete cosa contengono.",
-        image: require('../../assets/images/onboarding-diary.jpg'),
-    },
-    {
-        title: "La Domenica",
-        description: "Ogni domenica, la magia si svela. I messaggi segreti vengono rivelati insieme, creando momenti speciali da condividere.",
-        image: require('../../assets/images/onboarding-reveal.jpg'),
-    },
-    {
-        title: "Giorni Speciali",
-        description: "Programma sorprese per compleanni, anniversari e momenti importanti. I tuoi messaggi appariranno esattamente quando vuoi tu.",
-        image: require('../../assets/images/onboarding-calendar.jpg'),
-    },
+const ONBOARDING_STEPS = [
+    { type: 'slide', title: "La Distanza", description: "Quando l'amore supera i chilometri. Scrivi messaggi segreti al tuo partner, anche quando siete lontani.", emoji: "✈️" },
+    { type: 'slide', title: "Il Diario Segreto", description: "Scrivi i tuoi pensieri più intimi. I messaggi restano nascosti nella nebbia fino al momento perfetto.", emoji: "📖" },
+    { type: 'login' }     // Login/Register
 ];
 
 export default function WelcomeScreen() {
     const router = useRouter();
+    const { signIn, signUp, isLoading } = useAuthStore();
     const [currentScreen, setCurrentScreen] = useState(0);
-    const [direction, setDirection] = useState<'left' | 'right' | 'none'>('none');
+    const [isRegistering, setIsRegistering] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
 
-    const totalScreens = ONBOARDING_DATA.length + 1; // Slides + Login Screen
-    const isLoginScreen = currentScreen === ONBOARDING_DATA.length;
+    const currentStep = ONBOARDING_STEPS[currentScreen];
+    const isLoginScreen = currentStep.type === 'login';
+
+    const handleAuth = async () => {
+        try {
+            if (isRegistering) {
+                await signUp(email, password, name);
+            } else {
+                await signIn(email, password);
+            }
+            router.replace('/(tabs)');
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const handleNext = useCallback(() => {
-        if (currentScreen < totalScreens - 1) {
-            setDirection('left');
+        if (currentScreen < ONBOARDING_STEPS.length - 1) {
             Haptics.selectionAsync();
             setCurrentScreen(prev => prev + 1);
         }
-    }, [currentScreen, totalScreens]);
+    }, [currentScreen]);
 
     const handleBack = useCallback(() => {
         if (currentScreen > 0) {
-            setDirection('right');
             Haptics.selectionAsync();
             setCurrentScreen(prev => prev - 1);
         }
     }, [currentScreen]);
 
     const handleSkip = useCallback(() => {
-        setDirection('left');
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        setCurrentScreen(totalScreens - 1); // Go to login
-    }, [totalScreens]);
+        setCurrentScreen(ONBOARDING_STEPS.length - 1);
+    }, []);
+
+    const renderSlide = (step: any, index: number) => {
+        if (currentScreen !== index) return null;
+
+        if (step.type === 'slide') {
+            return (
+                <View key={index} style={styles.slide}>
+                    <Text style={styles.slideEmoji}>{step.emoji}</Text>
+                    <Text style={styles.slideTitle}>{step.title}</Text>
+                    <Text style={styles.slideDescription}>{step.description}</Text>
+                </View>
+            );
+        }
+
+        return (
+            <AuthContainer
+                key={index}
+                title={isRegistering ? "Crea Account" : "Bentornati"}
+                subtitle={isRegistering ? "Inizia il vostro viaggio" : "Continua a scrivere la vostra storia"}
+            >
+                <View style={{ gap: Spacing[2] }}>
+                    {isRegistering && (
+                        <AuthInput
+                            label="Nome"
+                            value={name}
+                            onChangeText={setName}
+                            placeholder="Il tuo nome"
+                        />
+                    )}
+                    <AuthInput
+                        label="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        placeholder="tuo@email.com"
+                        keyboardType="email-address"
+                    />
+                    <AuthInput
+                        label="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        placeholder="••••••••"
+                        secureTextEntry
+                    />
+
+                    <View style={{ marginTop: Spacing[4], gap: Spacing[2] }}>
+                        <AuthButton
+                            title={isRegistering ? "Registrati" : "Accedi"}
+                            onPress={handleAuth}
+                            loading={isLoading}
+                        />
+                        <AuthButton
+                            title={isRegistering ? "Hai già un account? Accedi" : "Nuovi qui? Registrati"}
+                            onPress={() => setIsRegistering(!isRegistering)}
+                            variant="secondary"
+                        />
+                    </View>
+                </View>
+            </AuthContainer>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -69,28 +125,14 @@ export default function WelcomeScreen() {
 
             {/* Slides Container */}
             <View style={styles.slidesContainer}>
-                {ONBOARDING_DATA.map((slide, index) => (
-                    <OnboardingSlide
-                        key={index}
-                        index={index}
-                        title={slide.title}
-                        description={slide.description}
-                        image={slide.image}
-                        isActive={currentScreen === index}
-                        direction={currentScreen > index ? 'left' : currentScreen < index ? 'right' : 'none'}
-                    />
-                ))}
-
-                {/* Login Screen Overlay */}
-                <LoginScreen isActive={isLoginScreen} />
+                {ONBOARDING_STEPS.map((step, index) => renderSlide(step, index))}
             </View>
 
             {/* Navigation Controls (Hidden on Login Screen) */}
-            {!isLoginScreen && (
+            {!isLoginScreen && currentStep.type === 'slide' && (
                 <View style={styles.navigationContainer}>
-                    {/* Progress Dots */}
                     <View style={styles.dotsContainer}>
-                        {Array.from({ length: totalScreens }).map((_, index) => (
+                        {ONBOARDING_STEPS.map((_, index) => (
                             <View
                                 key={index}
                                 style={[
@@ -101,9 +143,7 @@ export default function WelcomeScreen() {
                         ))}
                     </View>
 
-                    {/* Bottom Buttons */}
                     <View style={styles.buttonsRow}>
-                        {/* Left Button (Skip or Back) */}
                         {currentScreen === 0 ? (
                             <TouchableOpacity onPress={handleSkip} style={styles.textButton}>
                                 <Text style={styles.textButtonLabel}>Salta</Text>
@@ -115,18 +155,24 @@ export default function WelcomeScreen() {
                             </TouchableOpacity>
                         )}
 
-                        {/* Right Button (Next or Inizia) */}
                         <TouchableOpacity
                             onPress={handleNext}
                             style={styles.primaryButton}
                             activeOpacity={0.8}
                         >
-                            <Text style={styles.primaryButtonText}>
-                                {currentScreen === ONBOARDING_DATA.length - 1 ? 'Inizia' : 'Avanti'}
-                            </Text>
+                            <Text style={styles.primaryButtonText}>Avanti</Text>
                             <Icon name="chevron-right" size={20} color={Colors.white} />
                         </TouchableOpacity>
                     </View>
+                </View>
+            )}
+
+            {/* Back button for Interactive Slides if needed (optional UX choice) */}
+            {!isLoginScreen && currentStep.type !== 'slide' && (
+                <View style={styles.topNavigation}>
+                    <TouchableOpacity onPress={handleBack} style={styles.backButtonCircle}>
+                        <Icon name="chevron-left" size={24} color={Colors.stone[500]} />
+                    </TouchableOpacity>
                 </View>
             )}
         </SafeAreaView>
@@ -134,6 +180,30 @@ export default function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
+    slide: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: Spacing[8],
+        backgroundColor: Colors.background.light,
+    } as ViewStyle,
+    slideEmoji: {
+        fontSize: 80,
+        marginBottom: Spacing[8],
+    } as TextStyle,
+    slideTitle: {
+        fontSize: 32,
+        fontWeight: '800',
+        color: Colors.text.light,
+        textAlign: 'center',
+        marginBottom: Spacing[4],
+    } as TextStyle,
+    slideDescription: {
+        fontSize: 18,
+        color: Colors.stone[500],
+        textAlign: 'center',
+        lineHeight: 26,
+    } as TextStyle,
     container: {
         flex: 1,
         backgroundColor: Colors.background.light,
@@ -141,7 +211,6 @@ const styles = StyleSheet.create({
     slidesContainer: {
         flex: 1,
         position: 'relative',
-        // Make sure slides take full space
     } as ViewStyle,
     navigationContainer: {
         paddingHorizontal: Spacing[6],
@@ -187,7 +256,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: Colors.primary.DEFAULT,
         paddingHorizontal: Spacing[6],
-        paddingVertical: 12, // Custom height for consistency
+        paddingVertical: 12,
         borderRadius: BorderRadius.full,
         gap: Spacing[1],
         shadowColor: Colors.primary.DEFAULT,
@@ -202,4 +271,23 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginLeft: Spacing[1],
     } as TextStyle,
+    topNavigation: {
+        position: 'absolute',
+        top: 60, // approximate status bar + margin
+        left: Spacing[4],
+        zIndex: 10,
+    } as ViewStyle,
+    backButtonCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: Colors.white,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    } as ViewStyle,
 });

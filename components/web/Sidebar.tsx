@@ -1,6 +1,6 @@
+import { Icon } from '@/components/ui/Icon';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { BlurView } from 'expo-blur';
 import { Link, usePathname } from 'expo-router';
 import React from 'react';
@@ -14,8 +14,8 @@ export function Sidebar() {
 
     const menuItems = [
         { name: 'Home', icon: 'home', path: '/(tabs)' },
-        { name: 'Calendario', icon: 'calendar', path: '/(tabs)/calendar' },
-        { name: 'Profilo', icon: 'user', path: '/(tabs)/profile' },
+        { name: 'Calendario', icon: 'calendar-today', path: '/(tabs)/calendar' },
+        { name: 'Profilo', icon: 'person', path: '/(tabs)/profile' },
     ] as const;
 
     return (
@@ -43,11 +43,10 @@ export function Sidebar() {
                                 styles.menuItem,
                                 isActive && styles.menuItemActive
                             ])}>
-                                <FontAwesome
+                                <Icon
                                     name={item.icon}
                                     size={20}
                                     color={isActive ? activeColor : inactiveColor}
-                                    style={{ width: 24, textAlign: 'center' }}
                                 />
                                 <Text style={[
                                     styles.menuText,

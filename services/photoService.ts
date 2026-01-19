@@ -65,10 +65,12 @@ export async function takePhoto(): Promise<string | null> {
  * Upload an image to Supabase Storage
  */
 export async function uploadPhoto(userId: string, imageUri: string): Promise<string> {
+    let uploadUri = imageUri;
+
     // Read file using standard fetch API (works for local URIs in RN)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-    const response = await fetch(imageUri, { signal: controller.signal });
+    const response = await fetch(uploadUri, { signal: controller.signal });
     clearTimeout(timeoutId);
     const blob = await response.blob();
     const arrayBuffer = await new Response(blob).arrayBuffer();
@@ -114,3 +116,4 @@ export async function deletePhoto(photoUrl: string): Promise<void> {
         console.error('Failed to delete photo');
     }
 }
+

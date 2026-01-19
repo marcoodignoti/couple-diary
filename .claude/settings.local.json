@@ -16,7 +16,9 @@
       "Skill(expo-app-design:api-routes)",
       "Skill(expo-app-design:data-fetching)",
       "Bash(where:*)",
-      "Bash(npx expo-doctor:*)"
+      "Bash(npx expo-doctor:*)",
+      "Bash(dir /s /b \"C:\\\\Users\\\\marco\\\\couple-diary\\\\revenuecat\\\\references\")",
+      "Bash(dir:*)"
     ]
   },
   "outputStyle": "default"

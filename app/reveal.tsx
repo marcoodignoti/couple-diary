@@ -1,10 +1,11 @@
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Dimensions,
-    Image,
     ImageStyle,
+    ScrollView,
     StyleSheet,
     Text,
     TextStyle,
@@ -40,6 +41,8 @@ const MOOD_CONFIG: Record<Mood, { icon: string; color: string; label: string }> 
     sad: { icon: 'sentiment-dissatisfied', color: '#64748b', label: 'Triste' },
     anxious: { icon: 'psychology', color: '#8b5cf6', label: 'Ansioso' },
     tired: { icon: 'bedtime', color: '#a8a29e', label: 'Stanco' },
+    calm: { icon: 'spa', color: '#6EE7B7', label: 'Calmo' },
+    angry: { icon: 'mood-bad', color: '#FCA5A5', label: 'Arrabbiato' },
 };
 
 // Progress bar component
@@ -85,13 +88,42 @@ export default function RevealScreen() {
     const { isDark } = useTheme();
     const { data: partnerEntries = [] } = usePartnerEntries(partner?.id);
 
-    // Get entries for this week
+    // Get entries for the weekly reveal window
+    // Entries from Monday 00:00 to Sunday 09:59 of the current week
     const entries = useMemo(() => {
-        // Filter entries from last 7 days
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return partnerEntries.filter(e => new Date(e.created_at) >= weekAgo);
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0 = Sunday
+
+        // Calculate the start of the current week (Monday 00:00)
+        // If today is Sunday (0), we go back 6 days to get Monday
+        // If today is Monday (1), we go back 0 days
+        // If today is Tuesday (2), we go back 1 day, etc.
+        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - daysToSubtract);
+        weekStart.setHours(0, 0, 0, 0);
+
+        // Calculate the end of the reveal window (Sunday 09:59:59)
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6); // Sunday
+        weekEnd.setHours(9, 59, 59, 999);
+
+        return partnerEntries.filter(e => {
+            const entryDate = new Date(e.created_at);
+            return entryDate >= weekStart && entryDate <= weekEnd;
+        });
     }, [partnerEntries]);
+
+    // Prefetch images when entries are loaded
+    useEffect(() => {
+        const imageUrls = entries
+            .filter(e => e.photo_url)
+            .map(e => e.photo_url as string);
+
+        if (imageUrls.length > 0) {
+            Image.prefetch(imageUrls);
+        }
+    }, [entries]);
 
     // Total steps = intro + entries + finale
     const totalSteps = 1 + entries.length + 1;
@@ -306,21 +338,28 @@ export default function RevealScreen() {
                         </View>
                     )}
 
-                    {/* Entry content */}
-                    <View style={styles.entryCard} pointerEvents="none">
-                        <Text style={styles.entryText}>
-                            "{currentEntry.content}"
-                        </Text>
-                    </View>
+                    {/* Entry content - SCROLLABLE for long text */}
+                    <ScrollView
+                        style={styles.entryScrollContainer}
+                        contentContainerStyle={{ paddingBottom: 100 }}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        {/* Photo */}
+                        {currentEntry.photo_url && (
+                            <Image
+                                source={{ uri: currentEntry.photo_url }}
+                                style={styles.entryPhoto}
+                                contentFit="cover"
+                                transition={62}
+                            />
+                        )}
 
-                    {/* Photo */}
-                    {currentEntry.photo_url && (
-                        <Image
-                            source={{ uri: currentEntry.photo_url }}
-                            style={styles.entryPhoto}
-                            resizeMode="cover"
-                        />
-                    )}
+                        <View style={styles.entryCard} pointerEvents="auto">
+                            <Text style={styles.entryText}>
+                                "{currentEntry.content}"
+                            </Text>
+                        </View>
+                    </ScrollView>
 
                     {/* Reactions - MUST BE AUTO INTERACTIVE */}
                     <View style={styles.reactionSection} pointerEvents="auto">
@@ -361,8 +400,9 @@ export default function RevealScreen() {
 
     return (
         <View style={styles.container}>
-            {/* Background gradient */}
+            {/* Background gradient & Icon */}
             <View style={styles.gradientBg} />
+            <Icon name="auto-awesome" size={300} color="#FFFFFF" style={styles.bgIcon} />
 
             {/* Progress bars */}
             <ProgressBars
@@ -398,7 +438,7 @@ export default function RevealScreen() {
 const styles = {
     container: {
         flex: 1,
-        backgroundColor: Colors.primary.dark,
+        backgroundColor: '#2E1065', // Cosmic Purple
     } as ViewStyle,
     touchLayer: {
         ...StyleSheet.absoluteFillObject,
@@ -419,13 +459,23 @@ const styles = {
     } as ViewStyle,
     gradientBg: {
         position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: Colors.primary.DEFAULT,
-        opacity: 0.9,
+        top: -100,
+        right: -100,
+        width: 400,
+        height: 400,
+        borderRadius: BorderRadius.full,
+        backgroundColor: '#7C3AED', // Violet Glow
+        opacity: 0.4,
         zIndex: 1,
+        transform: [{ scale: 1.5 }],
+    } as ViewStyle,
+    bgIcon: {
+        position: 'absolute',
+        bottom: -50,
+        left: -50,
+        opacity: 0.1,
+        zIndex: 1,
+        transform: [{ rotate: '15deg' }],
     } as ViewStyle,
     progressContainer: {
         flexDirection: 'row',
@@ -641,4 +691,8 @@ const styles = {
         position: 'absolute',
         fontSize: 24,
     } as TextStyle,
+    entryScrollContainer: {
+        flex: 1,
+        marginBottom: Spacing[4],
+    } as ViewStyle,
 };

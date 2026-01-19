@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS entries (
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   content TEXT NOT NULL,
   mood TEXT CHECK (mood IN ('happy', 'love', 'grateful', 'peaceful', 'excited', 'sad', 'anxious', 'tired')),
+  photo_url TEXT,
   is_special_date BOOLEAN DEFAULT FALSE,
   unlock_date DATE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()

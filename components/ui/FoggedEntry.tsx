@@ -70,7 +70,7 @@ export function FoggedEntry({ entry }: FoggedEntryProps) {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: 'rgba(255, 255, 255, 0.7)',
-        borderRadius: 20,
+        borderRadius: 32,
         padding: 16,
         marginVertical: 8,
         shadowColor: '#000',
