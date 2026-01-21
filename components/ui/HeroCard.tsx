@@ -17,9 +17,11 @@ interface HeroCardProps {
     style?: ViewStyle;
     /** Card size: 'large' (default) or 'compact' for grid layouts */
     size?: 'large' | 'compact';
+    /** Accessibility label for VoiceOver/TalkBack */
+    accessibilityLabel?: string;
 }
 
-export function HeroCard({
+export const HeroCard = React.memo(function HeroCard({
     title,
     content,
     themeColor,
@@ -32,6 +34,7 @@ export function HeroCard({
     renderHeader,
     style,
     size = 'large',
+    accessibilityLabel,
 }: HeroCardProps) {
     const isCompact = size === 'compact';
 
@@ -39,16 +42,14 @@ export function HeroCard({
         <TouchableOpacity
             activeOpacity={0.9}
             onPress={onPress}
+            accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel || title}
             style={[
                 styles.card,
                 isCompact && styles.cardCompact,
                 {
                     backgroundColor: themeColor,
-                    shadowColor: themeColor,
-                    shadowOffset: { width: 0, height: 8 },
-                    shadowOpacity: 0.4,
-                    shadowRadius: 16,
-                    elevation: 10,
+                    boxShadow: `0px 8px 16px ${themeColor}66`, // 40% opacity
                 },
                 style,
             ]}
@@ -105,7 +106,7 @@ export function HeroCard({
             </View>
         </TouchableOpacity>
     );
-}
+});
 
 const styles = StyleSheet.create({
     card: {

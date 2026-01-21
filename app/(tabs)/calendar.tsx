@@ -228,10 +228,7 @@ export default function CalendarScreen() {
                                                 styles.dot,
                                                 {
                                                     backgroundColor: Colors.primary.DEFAULT,
-                                                    shadowColor: Colors.primary.DEFAULT,
-                                                    shadowOffset: { width: 0, height: 2 },
-                                                    shadowOpacity: 0.3,
-                                                    shadowRadius: 3,
+                                                    boxShadow: `0px 2px 3px ${Colors.primary.DEFAULT}4D`,
                                                     elevation: 2
                                                 }
                                             ]} />
@@ -241,10 +238,7 @@ export default function CalendarScreen() {
                                                 styles.dot,
                                                 {
                                                     backgroundColor: Colors.secondary.DEFAULT,
-                                                    shadowColor: Colors.secondary.DEFAULT,
-                                                    shadowOffset: { width: 0, height: 2 },
-                                                    shadowOpacity: 0.3,
-                                                    shadowRadius: 3,
+                                                    boxShadow: `0px 2px 3px ${Colors.secondary.DEFAULT}4D`,
                                                     elevation: 2
                                                 }
                                             ]} />

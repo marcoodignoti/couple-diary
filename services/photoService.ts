@@ -7,6 +7,7 @@ import {
 import { supabase } from './supabase';
 
 const BUCKET_NAME = 'entry-photos';
+const PROFILE_BUCKET_NAME = 'profile-photos';
 
 /**
  * Request camera roll permissions
@@ -117,3 +118,62 @@ export async function deletePhoto(photoUrl: string): Promise<void> {
     }
 }
 
+/**
+ * Pick a profile image from the camera roll (square aspect ratio)
+ */
+export async function pickProfileImage(): Promise<string | null> {
+    const hasPermission = await requestMediaLibraryPermissions();
+    if (!hasPermission) {
+        throw new Error('Media library permission not granted');
+    }
+
+    const result = await launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1], // Square for profile photos
+        quality: 0.7,
+    });
+
+    if (result.canceled || !result.assets[0]?.uri) {
+        return null;
+    }
+
+    return result.assets[0].uri;
+}
+
+/**
+ * Upload a profile photo to Supabase Storage (private - only user can see)
+ */
+export async function uploadProfilePhoto(userId: string, imageUri: string): Promise<string> {
+    // Read file using standard fetch API
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(imageUri, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    const blob = await response.blob();
+    const arrayBuffer = await new Response(blob).arrayBuffer();
+
+    // Use fixed filename to overwrite previous avatar
+    const extension = imageUri.split('.').pop() || 'jpg';
+    const fileName = `${userId}/avatar.${extension}`;
+
+    // Upload to Supabase Storage (upsert to replace existing)
+    const { data, error } = await supabase.storage
+        .from(PROFILE_BUCKET_NAME)
+        .upload(fileName, arrayBuffer, {
+            contentType: `image/${extension}`,
+            upsert: true,
+        });
+
+    if (error) {
+        console.error('Profile upload error');
+        throw new Error('Impossibile caricare la foto. Riprova.');
+    }
+
+    // Get public URL with cache-busting timestamp
+    const { data: urlData } = supabase.storage
+        .from(PROFILE_BUCKET_NAME)
+        .getPublicUrl(data.path);
+
+    return `${urlData.publicUrl}?t=${Date.now()}`;
+}

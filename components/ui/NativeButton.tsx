@@ -22,6 +22,8 @@ interface NativeButtonProps {
     loading?: boolean;
     style?: ViewStyle;
     icon?: string;
+    /** Accessibility label for VoiceOver/TalkBack */
+    accessibilityLabel?: string;
 }
 
 /**
@@ -36,6 +38,7 @@ export function NativeButton({
     loading = false,
     style,
     icon,
+    accessibilityLabel,
 }: NativeButtonProps) {
     const scale = useSharedValue(1);
 
@@ -65,6 +68,9 @@ export function NativeButton({
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             disabled={isDisabled}
+            accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel || title}
+            accessibilityState={{ disabled: isDisabled }}
         >
             <Animated.View
                 style={[
@@ -112,11 +118,7 @@ const styles = StyleSheet.create({
     // Variants
     primary: {
         backgroundColor: '#E8B4B8',
-        shadowColor: '#E8B4B8',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
+        boxShadow: '0px 4px 8px rgba(232, 180, 184, 0.3)',
     },
     secondary: {
         backgroundColor: 'rgba(232, 180, 184, 0.15)',
@@ -130,14 +132,17 @@ const styles = StyleSheet.create({
     small: {
         paddingHorizontal: 16,
         paddingVertical: 10,
+        minHeight: 44, // iOS HIG touch target
     },
     medium: {
         paddingHorizontal: 24,
         paddingVertical: 14,
+        minHeight: 44, // iOS HIG touch target
     },
     large: {
         paddingHorizontal: 32,
         paddingVertical: 18,
+        minHeight: 48, // iOS HIG touch target
     },
     // Text styles
     text: {

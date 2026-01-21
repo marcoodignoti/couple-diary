@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"name": "couple-diary",
+			"path": "."
+		},
+		{
+			"name": "stitch_couple_diary",
+			"path": "../Downloads/stitch_couple_diary/stitch_couple_diary"
+		},
+		{
+			"name": "warm-welcome-screens",
+			"path": "../warm-welcome-screens"
+		},
+		{
+			"path": "../Desktop/.gemini/skills/brainstorming"
+		},
+		{
+			"path": "../.gemini/antigravity/skills/.agent"
+		}
+	],
+	"settings": {}
+}

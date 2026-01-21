@@ -1,6 +1,7 @@
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Image, ImageStyle, KeyboardAvoidingView, ScrollView, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Alert, ImageStyle, KeyboardAvoidingView, ScrollView, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { GlassCard } from '../../components/ui/GlassCard';
@@ -205,7 +206,8 @@ export default function EntryDetailScreen() {
                                     <Image
                                         source={{ uri: entry.photo_url }}
                                         style={styles.photo}
-                                        resizeMode="cover"
+                                        contentFit="cover"
+                                        transition={200}
                                     />
                                 </View>
                             </Animated.View>

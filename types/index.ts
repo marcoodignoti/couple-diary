@@ -4,10 +4,17 @@ export interface Profile {
     id: string;
     name: string;
     email: string;
+    avatar_url: string | null;
+    anniversary_date: string | null; // ISO date "2020-04-23"
     partner_id: string | null;
     pairing_code: string | null;
     pairing_code_expires_at: string | null;
     created_at: string;
+    // Gamification
+    current_streak: number;
+    last_entry_date: string | null; // ISO date "2024-01-20"
+    total_entries: number;
+    unlocked_themes: string[];
 }
 
 export type Mood = 'happy' | 'love' | 'grateful' | 'peaceful' | 'excited' | 'sad' | 'anxious' | 'tired' | 'calm' | 'angry';

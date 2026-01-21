@@ -171,13 +171,15 @@ export const NativeBottomSheet = forwardRef<BottomSheet, NativeBottomSheetProps>
         backgroundColor: isDark ? Colors.stone[900] : Colors.white,
         ...(process.env.EXPO_OS === 'ios'
           ? {
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: -4 },
-            shadowOpacity: isDark ? 0.5 : 0.15,
-            shadowRadius: 16,
+            boxShadow: isDark
+              ? '0px -4px 16px rgba(0, 0, 0, 0.5)'
+              : '0px -4px 16px rgba(0, 0, 0, 0.15)',
           }
           : {
             elevation: 16,
+            boxShadow: isDark
+              ? '0px -4px 16px rgba(0, 0, 0, 0.5)'
+              : '0px -4px 16px rgba(0, 0, 0, 0.15)',
           }),
       };
     }, [isDark, backgroundStyle]);
@@ -246,6 +248,8 @@ export const NativeBottomSheet = forwardRef<BottomSheet, NativeBottomSheetProps>
                     },
                   ]}
                   hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Chiudi"
                 >
                   <Icon
                     name="close"

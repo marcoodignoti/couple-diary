@@ -259,10 +259,7 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: BorderRadius.full,
         gap: Spacing[1],
-        shadowColor: Colors.primary.DEFAULT,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        boxShadow: `0px 4px 8px ${Colors.primary.DEFAULT}4D`, // 30% opacity of primary color
         elevation: 4,
     } as ViewStyle,
     primaryButtonText: {
@@ -284,10 +281,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.white,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
         elevation: 2,
     } as ViewStyle,
 });

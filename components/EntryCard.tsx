@@ -1,4 +1,5 @@
 import { Link } from 'expo-router';
+import React from 'react';
 import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import type { Entry, PartnerEntry } from '../types';
 import { MOODS } from '../utils/constants';
@@ -12,7 +13,7 @@ interface EntryCardProps {
     onDelete?: () => void;
 }
 
-export function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: EntryCardProps) {
+export const EntryCard = React.memo(function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: EntryCardProps) {
     const moodData = entry.mood
         ? MOODS.find(m => m.id === entry.mood)
         : null;
@@ -71,7 +72,11 @@ export function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: Ent
         return (
             <Link href={href as any}>
                 <Link.Trigger>
-                    <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
+                    <Pressable
+                        style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Pensiero del ${formatDate(entry.created_at)}`}
+                    >
                         {cardContent}
                     </Pressable>
                 </Link.Trigger>
@@ -109,6 +114,8 @@ export function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: Ent
             <Pressable
                 onPress={onPress}
                 style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+                accessibilityRole="button"
+                accessibilityLabel={`Pensiero del ${formatDate(entry.created_at)}`}
             >
                 {cardContent}
             </Pressable>
@@ -117,7 +124,7 @@ export function EntryCard({ entry, isOwn = false, href, onPress, onDelete }: Ent
 
     // Non-interactive card
     return cardContent;
-}
+});
 
 const styles = StyleSheet.create({
     container: {

@@ -8,9 +8,10 @@ import { useAuthStore } from '@/stores/authStore';
 import { Mood } from '@/types';
 import { clearDraft, loadDraft, saveDraft } from '@/utils/drafts';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Image, ImageStyle, KeyboardAvoidingView, ScrollView, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Alert, ImageStyle, KeyboardAvoidingView, ScrollView, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -205,7 +206,7 @@ export default function NewEntryScreen() {
                                     {imageUri && (
                                         <View style={styles.photoPreviewContainer}>
                                             <View style={[styles.photoPreview, { boxShadow: Shadows.sm } as ViewStyle]}>
-                                                <Image source={{ uri: imageUri }} style={styles.photoImage} resizeMode="cover" />
+                                                <Image source={{ uri: imageUri }} style={styles.photoImage} contentFit="cover" transition={200} />
                                                 <TouchableOpacity
                                                     onPress={handleRemovePhoto}
                                                     style={styles.removePhotoButton}

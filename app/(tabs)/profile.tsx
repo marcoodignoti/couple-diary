@@ -1,12 +1,16 @@
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Image, ImageStyle, ScrollView, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Alert, ImageStyle, ScrollView, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Icon } from '../../components/ui/Icon';
 
+import BottomSheet from '@gorhom/bottom-sheet';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { SpecialDatePickerSheet } from '../../components/ui/SpecialDatePickerSheet';
 import { BorderRadius, Colors, FontSizes, Shadows, Spacing } from '../../constants/theme';
+import { useAnniversary } from '../../hooks/useAnniversary';
 import { useResponsive } from '../../hooks/useResponsive';
 import { useStatusBarPadding } from '../../hooks/useStatusBarPadding';
 import { useTheme } from '../../hooks/useTheme';
@@ -17,11 +21,12 @@ import {
     setPrivacyLockPreference
 } from '../../services/biometricService';
 import { getNotificationPreference, setNotificationPreference } from '../../services/notificationService';
+import { pickProfileImage } from '../../services/photoService';
 import { useAuthStore } from '../../stores/authStore';
 
 export default function ProfileScreen() {
     const router = useRouter();
-    const { user, partner, isLoading, signOut } = useAuthStore();
+    const { user, partner, isLoading, signOut, updateAvatar, updateAnniversary } = useAuthStore();
     const { isDark, colors } = useTheme();
     const { contentMaxWidth, isTablet, horizontalPadding } = useResponsive();
     const statusBarPadding = useStatusBarPadding();
@@ -33,6 +38,13 @@ export default function ProfileScreen() {
     const [privacyLockEnabled, setPrivacyLockEnabled] = React.useState(false);
     const [biometricsAvailable, setBiometricsAvailable] = React.useState(false);
 
+    // Avatar upload state
+    const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false);
+
+    // Anniversary
+    const anniversaryInfo = useAnniversary(user?.anniversary_date ?? null);
+    const anniversarySheetRef = React.useRef<BottomSheet>(null);
+
     React.useEffect(() => {
         // Load preferences
         getNotificationPreference().then(setNotificationsEnabled);
@@ -41,6 +53,20 @@ export default function ProfileScreen() {
         isBiometricsSupported().then(setBiometricsAvailable);
         getPrivacyLockPreference().then(setPrivacyLockEnabled);
     }, []);
+
+    const handleAvatarPress = async () => {
+        try {
+            const imageUri = await pickProfileImage();
+            if (!imageUri) return;
+
+            setIsUploadingAvatar(true);
+            await updateAvatar(imageUri);
+        } catch (error: any) {
+            Alert.alert('Errore', 'Impossibile aggiornare la foto. Riprova.');
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
 
     const toggleNotifications = async (value: boolean) => {
         setNotificationsEnabled(value); // Optimistic update
@@ -111,192 +137,267 @@ export default function ProfileScreen() {
     }
 
     return (
-        <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{ flex: 1, backgroundColor: colors.background }}
-            contentContainerStyle={{
-                paddingBottom: 120,
-                paddingTop: statusBarPadding,
-                paddingHorizontal: horizontalPadding,
-                alignItems: isTablet ? 'center' : undefined,
-            }}
-            showsVerticalScrollIndicator={false}
-        >
-            <View style={{ width: '100%', maxWidth: contentMaxWidth }}>
-                {/* Profile Header */}
-                <Animated.View entering={FadeInDown.duration(600)} style={styles.profileHeader}>
-                    <View style={styles.avatarContainer}>
-                        <View style={[
-                            styles.avatarWrapper,
-                            {
-                                borderColor: isDark ? Colors.surface.dark : Colors.white,
-                                backgroundColor: Colors.stone[200],
-                                boxShadow: Shadows.soft,
-                            } as ViewStyle
-                        ]}>
-                            {user?.email ? (
-                                <Image
-                                    source={{ uri: `https://api.dicebear.com/7.x/initials/png?seed=${user.name}&backgroundColor=C0847C` }}
-                                    style={styles.avatarImage}
-                                />
-                            ) : (
-                                <View style={styles.avatarPlaceholder}>
-                                    <Icon name="person" size={48} color={Colors.stone[400]} />
-                                </View>
-                            )}
-                        </View>
-                        {partner && (
+        <>
+            <ScrollView
+                contentInsetAdjustmentBehavior="automatic"
+                style={{ flex: 1, backgroundColor: colors.background }}
+                contentContainerStyle={{
+                    paddingBottom: 120,
+                    paddingTop: statusBarPadding,
+                    paddingHorizontal: horizontalPadding,
+                    alignItems: isTablet ? 'center' : undefined,
+                }}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={{ width: '100%', maxWidth: contentMaxWidth }}>
+                    {/* Profile Header */}
+                    <Animated.View entering={FadeInDown.duration(600)} style={styles.profileHeader}>
+                        <TouchableOpacity
+                            onPress={handleAvatarPress}
+                            disabled={isUploadingAvatar}
+                            activeOpacity={0.8}
+                            style={styles.avatarContainer}
+                        >
                             <View style={[
-                                styles.heartBadge,
+                                styles.avatarWrapper,
                                 {
-                                    borderColor: isDark ? Colors.background.dark : Colors.white,
-                                    boxShadow: Shadows.md,
+                                    borderColor: isDark ? Colors.surface.dark : Colors.white,
+                                    backgroundColor: Colors.stone[200],
+                                    boxShadow: Shadows.soft,
                                 } as ViewStyle
                             ]}>
-                                <Icon name="favorite" size={14} color={Colors.white} />
+                                {isUploadingAvatar ? (
+                                    <View style={styles.avatarPlaceholder}>
+                                        <ActivityIndicator size="large" color={Colors.primary.DEFAULT} />
+                                    </View>
+                                ) : user?.avatar_url ? (
+                                    <Image
+                                        source={{ uri: user.avatar_url }}
+                                        style={styles.avatarImage}
+                                        contentFit="cover"
+                                        transition={200}
+                                    />
+                                ) : user?.email ? (
+                                    <Image
+                                        source={{ uri: `https://api.dicebear.com/7.x/initials/png?seed=${user.name}&backgroundColor=C0847C` }}
+                                        style={styles.avatarImage}
+                                        contentFit="cover"
+                                        transition={200}
+                                    />
+                                ) : (
+                                    <View style={styles.avatarPlaceholder}>
+                                        <Icon name="person" size={48} color={Colors.stone[400]} />
+                                    </View>
+                                )}
                             </View>
-                        )}
-                    </View>
-                    <Text selectable style={[styles.profileName, { color: isDark ? Colors.white : Colors.text.light }]}>
-                        {user?.name || 'Utente'}{partner ? ` & ${partner.name}` : ''}
-                    </Text>
-                    {partner && (
-                        <View style={[styles.coupleBadge, { backgroundColor: isDark ? `${Colors.primary.dark}33` : `${Colors.primary.DEFAULT}1A` }]}>
-                            <Text style={[styles.coupleBadgeText, { color: isDark ? Colors.primary.dark : Colors.primary.DEFAULT }]}>
-                                Insieme dal {getCoupleDate()}
-                            </Text>
-                        </View>
-                    )}
-                    {!partner && (
-                        <TouchableOpacity
-                            onPress={() => router.push('/onboarding/invite' as any)}
-                            style={styles.connectPartnerButton}
-                            activeOpacity={0.8}
-                        >
-                            <Text style={styles.connectPartnerText}>Connetti Partner →</Text>
+                            {/* Camera overlay badge */}
+                            <View style={[
+                                styles.cameraBadge,
+                                {
+                                    borderColor: isDark ? Colors.background.dark : Colors.white,
+                                    backgroundColor: Colors.primary.DEFAULT,
+                                } as ViewStyle
+                            ]}>
+                                <Icon name="camera-alt" size={14} color={Colors.white} />
+                            </View>
+                            {partner && (
+                                <View style={[
+                                    styles.heartBadge,
+                                    {
+                                        borderColor: isDark ? Colors.background.dark : Colors.white,
+                                        boxShadow: Shadows.md,
+                                    } as ViewStyle
+                                ]}>
+                                    <Icon name="favorite" size={14} color={Colors.white} />
+                                </View>
+                            )}
                         </TouchableOpacity>
-                    )}
-                </Animated.View>
-
-                {/* Menu Items */}
-                <View style={styles.menuContainer}>
-                    {/* Memories */}
-                    <Animated.View entering={FadeInDown.delay(100).duration(600)}>
-                        <GlassCard onPress={() => router.push('/calendar' as any)}>
-                            <View style={styles.menuRow}>
-                                <View style={styles.menuLeft}>
-                                    <View style={[styles.menuIcon, { backgroundColor: isDark ? `${Colors.primary.DEFAULT}33` : `${Colors.primary.DEFAULT}1A` }]}>
-                                        <Icon name="collections" size={22} color={Colors.primary.DEFAULT} />
-                                    </View>
-                                    <View>
-                                        <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>I Nostri Ricordi</Text>
-                                        <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Foto e momenti speciali</Text>
-                                    </View>
-                                </View>
-                                <Icon name="chevron-right" size={24} color={Colors.stone[300]} />
-                            </View>
-                        </GlassCard>
-                    </Animated.View>
-
-                    {/* Notifications */}
-                    <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-                        <GlassCard>
-                            <View style={styles.menuRow}>
-                                <View style={styles.menuLeft}>
-                                    <View style={[styles.menuIcon, { backgroundColor: isDark ? `${Colors.secondary.DEFAULT}33` : `${Colors.secondary.DEFAULT}1A` }]}>
-                                        <Icon name="notifications-active" size={22} color={Colors.secondary.DEFAULT} />
-                                    </View>
-                                    <View>
-                                        <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Notifiche</Text>
-                                        <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Promemoria giornalieri</Text>
-                                    </View>
-                                </View>
-                                <Switch
-                                    value={notificationsEnabled}
-                                    onValueChange={toggleNotifications}
-                                    trackColor={{ false: Colors.stone[300], true: Colors.secondary.DEFAULT }}
-                                    thumbColor={Colors.white}
-                                />
-                            </View>
-                        </GlassCard>
-                    </Animated.View>
-
-                    {/* Privacy Lock */}
-                    <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-                        <GlassCard>
-                            <View style={styles.menuRow}>
-                                <View style={styles.menuLeft}>
-                                    <View style={[styles.menuIcon, { backgroundColor: isDark ? 'rgba(20, 184, 166, 0.2)' : 'rgba(20, 184, 166, 0.1)' }]}>
-                                        <Icon name="lock" size={22} color="#14b8a6" />
-                                    </View>
-                                    <View>
-                                        <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Blocco Privacy</Text>
-                                        <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Biometria e passcode</Text>
-                                    </View>
-                                </View>
-                                <Switch
-                                    value={privacyLockEnabled}
-                                    onValueChange={() => togglePrivacyLock(privacyLockEnabled)}
-                                    disabled={!biometricsAvailable}
-                                    trackColor={{ false: Colors.stone[300], true: '#14b8a6' }}
-                                    thumbColor={Colors.white}
-                                />
-                            </View>
-                        </GlassCard>
-                    </Animated.View>
-
-                    {/* Account Section */}
-                    <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.accountSection}>
-                        <Text style={styles.sectionLabel}>Account</Text>
-                        <View style={[
-                            styles.accountCard,
-                            {
-                                backgroundColor: isDark ? Colors.surface.dark : Colors.white,
-                                borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
-                                boxShadow: Shadows.sm,
-                            } as ViewStyle
-                        ]}>
+                        <Text selectable style={[styles.profileName, { color: isDark ? Colors.white : Colors.text.light }]}>
+                            {user?.name || 'Utente'}{partner ? ` & ${partner.name}` : ''}
+                        </Text>
+                        {partner && (
                             <TouchableOpacity
-                                onPress={() => router.push('/profile/edit' as any)}
-                                style={[styles.accountRow, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}
-                                activeOpacity={0.7}
+                                onPress={() => anniversarySheetRef.current?.expand()}
+                                activeOpacity={0.8}
+                                style={[styles.coupleBadge, { backgroundColor: isDark ? `${Colors.primary.dark}33` : `${Colors.primary.DEFAULT}1A` }]}
                             >
-                                <Text style={[styles.accountRowText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Modifica Profilo</Text>
-                                <Icon name="arrow-forward-ios" size={14} color={Colors.stone[300]} />
+                                {anniversaryInfo ? (
+                                    <View style={{ alignItems: 'center' }}>
+                                        <Text style={[styles.coupleBadgeText, { color: isDark ? Colors.primary.dark : Colors.primary.DEFAULT }]}>
+                                            💕 {anniversaryInfo.formattedDate} • {anniversaryInfo.formattedDuration}
+                                        </Text>
+                                        {anniversaryInfo.daysUntil > 0 && anniversaryInfo.daysUntil <= 30 && (
+                                            <Text style={[styles.countdownText, { color: isDark ? Colors.stone[400] : Colors.stone[500] }]}>
+                                                {anniversaryInfo.daysUntil} {anniversaryInfo.daysUntil === 1 ? 'giorno' : 'giorni'} al prossimo
+                                            </Text>
+                                        )}
+                                        {anniversaryInfo.isToday && (
+                                            <Text style={[styles.countdownText, { color: Colors.success, fontWeight: '700' }]}>
+                                                🎉 Oggi è il vostro anniversario!
+                                            </Text>
+                                        )}
+                                    </View>
+                                ) : (
+                                    <Text style={[styles.coupleBadgeText, { color: isDark ? Colors.primary.dark : Colors.primary.DEFAULT }]}>
+                                        📅 Imposta il vostro anniversario
+                                    </Text>
+                                )}
                             </TouchableOpacity>
-
+                        )}
+                        {!partner && (
                             <TouchableOpacity
-                                style={[styles.accountRow, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}
-                                activeOpacity={0.7}
+                                onPress={() => router.push('/onboarding/invite' as any)}
+                                style={styles.connectPartnerButton}
+                                activeOpacity={0.8}
                             >
-                                <Text style={[styles.accountRowText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Piano Abbonamento</Text>
-                                <View style={styles.planRow}>
-                                    <View style={styles.freeBadge}>
-                                        <Text style={styles.freeBadgeText}>FREE</Text>
+                                <Text style={styles.connectPartnerText}>Connetti Partner →</Text>
+                            </TouchableOpacity>
+                        )}
+                    </Animated.View>
+
+                    {/* Anniversary Date Picker Sheet - moved outside ScrollView for proper z-index */}
+
+                    {/* Menu Items */}
+                    <View style={styles.menuContainer}>
+                        {/* Memories */}
+                        <Animated.View entering={FadeInDown.delay(100).duration(600)}>
+                            <GlassCard onPress={() => router.push('/calendar' as any)}>
+                                <View style={styles.menuRow}>
+                                    <View style={styles.menuLeft}>
+                                        <View style={[styles.menuIcon, { backgroundColor: isDark ? `${Colors.primary.DEFAULT}33` : `${Colors.primary.DEFAULT}1A` }]}>
+                                            <Icon name="collections" size={22} color={Colors.primary.DEFAULT} />
+                                        </View>
+                                        <View>
+                                            <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>I Nostri Ricordi</Text>
+                                            <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Foto e momenti speciali</Text>
+                                        </View>
                                     </View>
+                                    <Icon name="chevron-right" size={24} color={Colors.stone[300]} />
+                                </View>
+                            </GlassCard>
+                        </Animated.View>
+
+                        {/* Notifications */}
+                        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+                            <GlassCard>
+                                <View style={styles.menuRow}>
+                                    <View style={styles.menuLeft}>
+                                        <View style={[styles.menuIcon, { backgroundColor: isDark ? `${Colors.secondary.DEFAULT}33` : `${Colors.secondary.DEFAULT}1A` }]}>
+                                            <Icon name="notifications-active" size={22} color={Colors.secondary.DEFAULT} />
+                                        </View>
+                                        <View>
+                                            <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Notifiche</Text>
+                                            <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Promemoria giornalieri</Text>
+                                        </View>
+                                    </View>
+                                    <Switch
+                                        value={notificationsEnabled}
+                                        onValueChange={toggleNotifications}
+                                        trackColor={{ false: Colors.stone[300], true: Colors.secondary.DEFAULT }}
+                                        thumbColor={Colors.white}
+                                    />
+                                </View>
+                            </GlassCard>
+                        </Animated.View>
+
+                        {/* Privacy Lock */}
+                        <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+                            <GlassCard>
+                                <View style={styles.menuRow}>
+                                    <View style={styles.menuLeft}>
+                                        <View style={[styles.menuIcon, { backgroundColor: isDark ? 'rgba(20, 184, 166, 0.2)' : 'rgba(20, 184, 166, 0.1)' }]}>
+                                            <Icon name="lock" size={22} color="#14b8a6" />
+                                        </View>
+                                        <View>
+                                            <Text style={[styles.menuTitle, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Blocco Privacy</Text>
+                                            <Text style={[styles.menuSubtitle, { color: isDark ? `${Colors.text.dark}99` : `${Colors.text.light}99` }]}>Biometria e passcode</Text>
+                                        </View>
+                                    </View>
+                                    <Switch
+                                        value={privacyLockEnabled}
+                                        onValueChange={() => togglePrivacyLock(privacyLockEnabled)}
+                                        disabled={!biometricsAvailable}
+                                        trackColor={{ false: Colors.stone[300], true: '#14b8a6' }}
+                                        thumbColor={Colors.white}
+                                    />
+                                </View>
+                            </GlassCard>
+                        </Animated.View>
+
+                        {/* Account Section */}
+                        <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.accountSection}>
+                            <Text style={styles.sectionLabel}>Account</Text>
+                            <View style={[
+                                styles.accountCard,
+                                {
+                                    backgroundColor: isDark ? Colors.surface.dark : Colors.white,
+                                    borderColor: isDark ? Colors.stone[800] : Colors.stone[100],
+                                    boxShadow: Shadows.sm,
+                                } as ViewStyle
+                            ]}>
+                                <TouchableOpacity
+                                    onPress={() => router.push('/profile/edit' as any)}
+                                    style={[styles.accountRow, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={[styles.accountRowText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Modifica Profilo</Text>
                                     <Icon name="arrow-forward-ios" size={14} color={Colors.stone[300]} />
-                                </View>
-                            </TouchableOpacity>
+                                </TouchableOpacity>
 
-                            <TouchableOpacity
-                                onPress={handleLogout}
-                                style={styles.logoutRow}
-                                activeOpacity={0.7}
-                            >
-                                <Text style={styles.logoutText}>Esci</Text>
-                                <Icon name="logout" size={18} color="#fecaca" />
-                            </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.accountRow, { borderBottomColor: isDark ? Colors.stone[800] : Colors.stone[100] }]}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={[styles.accountRowText, { color: isDark ? Colors.text.dark : Colors.text.light }]}>Piano Abbonamento</Text>
+                                    <View style={styles.planRow}>
+                                        <View style={styles.freeBadge}>
+                                            <Text style={styles.freeBadgeText}>FREE</Text>
+                                        </View>
+                                        <Icon name="arrow-forward-ios" size={14} color={Colors.stone[300]} />
+                                    </View>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    onPress={handleLogout}
+                                    style={styles.logoutRow}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={styles.logoutText}>Esci</Text>
+                                    <Icon name="logout" size={18} color="#fecaca" />
+                                </TouchableOpacity>
+                            </View>
+                        </Animated.View>
+
+
+                        <View style={styles.footer}>
+                            <Text style={styles.versionText}>Couple Diary v2.4.0</Text>
+                            <Text style={styles.footerText}>Fatto con ❤️ per voi due</Text>
                         </View>
-                    </Animated.View>
-
-
-                    <View style={styles.footer}>
-                        <Text style={styles.versionText}>Couple Diary v2.4.0</Text>
-                        <Text style={styles.footerText}>Fatto con ❤️ per voi due</Text>
                     </View>
                 </View>
-            </View>
-        </ScrollView >
+            </ScrollView>
+
+            {/* Anniversary Date Picker Sheet - outside ScrollView for proper z-index */}
+            <SpecialDatePickerSheet
+                ref={anniversarySheetRef}
+                initialDate={user?.anniversary_date ? new Date(user.anniversary_date) : new Date()}
+                allowPastDates={true}
+                onDateSelected={async (date: Date) => {
+                    try {
+                        await updateAnniversary(date);
+                    } catch {
+                        Alert.alert('Errore', 'Impossibile salvare la data. Riprova.');
+                    }
+                }}
+                onRemoveDate={user?.anniversary_date ? async () => {
+                    try {
+                        await updateAnniversary(null);
+                    } catch {
+                        Alert.alert('Errore', 'Impossibile rimuovere la data. Riprova.');
+                    }
+                } : undefined}
+            />
+        </>
     );
 }
 
@@ -342,6 +443,17 @@ const styles = {
         justifyContent: 'center',
         borderWidth: 2,
     } as ViewStyle,
+    cameraBadge: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 32,
+        height: 32,
+        borderRadius: BorderRadius.full,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+    } as ViewStyle,
     profileName: {
         fontSize: FontSizes['2xl'],
         fontWeight: '800',
@@ -357,6 +469,10 @@ const styles = {
         fontSize: FontSizes.sm,
         fontWeight: '700',
         letterSpacing: 0.5,
+    } as TextStyle,
+    countdownText: {
+        fontSize: FontSizes.xs,
+        marginTop: Spacing[1],
     } as TextStyle,
     connectPartnerButton: {
         backgroundColor: `${Colors.secondary.DEFAULT}1A`,

@@ -8,7 +8,7 @@ interface MoodPickerProps {
     onSelect: (mood: Mood | null) => void;
 }
 
-export function MoodPicker({ selectedMood, onSelect }: MoodPickerProps) {
+export const MoodPicker = React.memo(function MoodPicker({ selectedMood, onSelect }: MoodPickerProps) {
     return (
         <View style={styles.container}>
             <Text style={styles.label}>Come ti senti oggi?</Text>
@@ -22,6 +22,9 @@ export function MoodPicker({ selectedMood, onSelect }: MoodPickerProps) {
                         ]}
                         onPress={() => onSelect(selectedMood === mood.id ? null : mood.id as Mood)}
                         activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={mood.label}
+                        accessibilityState={{ selected: selectedMood === mood.id }}
                     >
                         <Text style={styles.emoji}>{mood.emoji}</Text>
                         <Text style={[
@@ -35,7 +38,7 @@ export function MoodPicker({ selectedMood, onSelect }: MoodPickerProps) {
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -59,14 +62,11 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.6)',
         width: '23%',
         minWidth: 70,
+        minHeight: 44, // iOS HIG touch target
     },
     moodItemSelected: {
         backgroundColor: '#E8B4B8',
-        shadowColor: '#E8B4B8',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 3,
+        boxShadow: '0px 2px 4px rgba(232, 180, 184, 0.3)',
     },
     emoji: {
         fontSize: 28,

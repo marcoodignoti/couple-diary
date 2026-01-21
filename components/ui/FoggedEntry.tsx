@@ -13,7 +13,7 @@ interface FoggedEntryProps {
  * Displays a fogged/blurred entry preview
  * Shows date and mood, but content is obscured with blur effect
  */
-export function FoggedEntry({ entry }: FoggedEntryProps) {
+export const FoggedEntry = React.memo(function FoggedEntry({ entry }: FoggedEntryProps) {
     // Find mood emoji if exists
     const moodData = entry.mood
         ? MOODS.find(m => m.id === entry.mood)
@@ -65,7 +65,7 @@ export function FoggedEntry({ entry }: FoggedEntryProps) {
             )}
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -73,11 +73,7 @@ const styles = StyleSheet.create({
         borderRadius: 32,
         padding: 16,
         marginVertical: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
+        boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     },
     header: {
         flexDirection: 'row',

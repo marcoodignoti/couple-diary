@@ -11,9 +11,11 @@ interface GlassCardProps {
     href?: string;
     onPress?: () => void;
     intensity?: number; // Kept for compatibility but unused in Minimalist design
+    /** Accessibility label for VoiceOver/TalkBack */
+    accessibilityLabel?: string;
 }
 
-export function GlassCard({ children, style, href, onPress }: GlassCardProps) {
+export const GlassCard = React.memo(function GlassCard({ children, style, href, onPress, accessibilityLabel }: GlassCardProps) {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
 
@@ -30,15 +32,14 @@ export function GlassCard({ children, style, href, onPress }: GlassCardProps) {
             overflow: 'visible', // Visible for shadows
             marginVertical: 8,
             backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF', // Solid Background
-            // Soft, Premium Shadows (Apple Style)
-            shadowColor: isDark ? '#000000' : '#888888',
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: isDark ? 0.3 : 0.08,
-            shadowRadius: 24,
-            elevation: 4,
+            // Soft, Premium Shadows (Apple Style) - CSS boxShadow format
+            boxShadow: isDark
+                ? '0px 8px 24px rgba(0, 0, 0, 0.3)'
+                : '0px 8px 24px rgba(136, 136, 136, 0.08)',
             // Subtle Border for Dark Mode separation
             borderWidth: isDark ? 1 : 0,
             borderColor: isDark ? '#333333' : 'transparent',
+            minHeight: 44, // iOS HIG touch target
         },
         style,
     ]) as ViewStyle;
@@ -50,6 +51,8 @@ export function GlassCard({ children, style, href, onPress }: GlassCardProps) {
                 <Link.Trigger>
                     <Pressable
                         android_ripple={isAndroid ? { color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)' } : undefined}
+                        accessibilityRole="button"
+                        accessibilityLabel={accessibilityLabel}
                         style={({ pressed, hovered }: any) => StyleSheet.flatten([
                             baseStyle,
                             {
@@ -78,6 +81,8 @@ export function GlassCard({ children, style, href, onPress }: GlassCardProps) {
                     onPress();
                 }
             }}
+            accessibilityRole={onPress ? "button" : undefined}
+            accessibilityLabel={accessibilityLabel}
             style={({ pressed, hovered }: any) => StyleSheet.flatten([
                 baseStyle,
                 {
@@ -92,6 +97,6 @@ export function GlassCard({ children, style, href, onPress }: GlassCardProps) {
             {cardContent}
         </Pressable>
     );
-}
+});
 
 export default GlassCard;

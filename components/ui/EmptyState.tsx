@@ -12,7 +12,7 @@ interface EmptyStateProps {
     onAction?: () => void;
 }
 
-export function EmptyState({ icon, title, description, actionLabel, onAction }: EmptyStateProps) {
+export const EmptyState = React.memo(function EmptyState({ icon, title, description, actionLabel, onAction }: EmptyStateProps) {
     return (
         <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
             <View style={styles.iconContainer}>
@@ -21,13 +21,19 @@ export function EmptyState({ icon, title, description, actionLabel, onAction }: 
             <Text style={styles.title}>{title}</Text>
             <Text style={styles.description}>{description}</Text>
             {actionLabel && onAction && (
-                <TouchableOpacity style={styles.button} onPress={onAction} activeOpacity={0.8}>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={onAction}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel={actionLabel}
+                >
                     <Text style={styles.buttonText}>{actionLabel}</Text>
                 </TouchableOpacity>
             )}
         </Animated.View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -65,6 +71,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 12,
         borderRadius: 999,
+        minHeight: 44, // iOS HIG touch target
     },
     buttonText: {
         color: 'white',

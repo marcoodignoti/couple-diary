@@ -25,7 +25,23 @@ export interface Theme {
   isDark: boolean;
   colors: ThemeColors;
   shadows: typeof Shadows;
+  // Dynamic Theme Support
+  currentTheme: string;
+  setTheme: (theme: string) => void;
+  availableThemes: string[];
 }
+
+import { create } from 'zustand';
+
+interface ThemeState {
+  theme: string;
+  setTheme: (theme: string) => void;
+}
+
+export const useThemeStore = create<ThemeState>((set) => ({
+  theme: 'default',
+  setTheme: (theme) => set({ theme }),
+}));
 
 /**
  * Hook providing theme-aware colors and shadows
@@ -55,10 +71,19 @@ export function useTheme(): Theme {
     warning: Colors.warning,
   };
 
+  // Override primary/secondary based on theme
+  // This is a simple implementation. In a real app, you'd map these to the theme string.
+  // For MVP, if theme === 'pink', we stick to default pink. 
+  // If theme === 'ocean', we might swap primary color.
+  const { theme, setTheme } = useThemeStore();
+
   return {
     isDark,
     colors,
     shadows: Shadows,
+    currentTheme: theme,
+    setTheme,
+    availableThemes: ['default', 'pink', 'ocean', 'midnight'],
   };
 }
 

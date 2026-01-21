@@ -1,10 +1,11 @@
 import { Redirect, useRouter } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
-import { RefreshControl, ScrollView, Text, TextStyle, View, ViewStyle } from 'react-native';
+import { RefreshControl, ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 import { EmptyState } from '../../components/ui/EmptyState';
 import { HeroCard } from '../../components/ui/HeroCard';
+import { StreakCounter } from '../../components/ui/StreakCounter';
 import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
 import { useMyEntries, useOnThisDay, usePartnerEntries } from '../../hooks/useEntryQueries';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -154,6 +155,13 @@ export default function HomeScreen() {
                 {partner ? `Connesso con ${partner.name}` : 'Pronto a connetterti?'}
               </Text>
             </View>
+            {/* Gamification: Streak Counter */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push('/gamification/milestones' as any)}
+            >
+              <StreakCounter streak={user?.current_streak || 0} />
+            </TouchableOpacity>
           </View>
         </Animated.View>
 

@@ -1,6 +1,7 @@
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ImageStyle, ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ImageStyle, ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { Icon, IconName } from '../../../components/ui/Icon';
@@ -132,7 +133,8 @@ export default function PartnerEntryDetailScreen() {
                         <Image
                             source={{ uri: entry.photo_url }}
                             style={styles.photo}
-                            resizeMode="cover"
+                            contentFit="cover"
+                            transition={200}
                         />
                     </View>
                 </Animated.View>

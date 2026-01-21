@@ -1,7 +1,7 @@
 import BottomSheet from '@gorhom/bottom-sheet';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { forwardRef, useState } from 'react';
-import { Pressable, Text, TextStyle, View, ViewStyle } from 'react-native';
+import DateTimePicker, { DateTimePickerAndroid, DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { Alert, Platform, Pressable, Text, TextStyle, View, ViewStyle } from 'react-native';
 import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
 import { useTheme } from '../../hooks/useTheme';
 import { Icon } from './Icon';
@@ -27,46 +27,121 @@ interface SpecialDatePickerSheetProps {
    * Callback when sheet is closed
    */
   onClose?: () => void;
+
+  /**
+   * Allow selecting dates in the past (for anniversaries)
+   */
+  allowPastDates?: boolean;
+}
+
+// Custom ref interface matching BottomSheet methods we actually use
+interface DatePickerSheetRef {
+  expand: () => void;
+  close: () => void;
 }
 
 /**
- * Minimal date picker bottom sheet with iOS wheel picker style
+ * Date picker that uses:
+ * - iOS: Bottom sheet with inline spinner picker
+ * - Android: Imperative API (native dialog) - cleaner, no layout jumps
  */
-export const SpecialDatePickerSheet = forwardRef<BottomSheet, SpecialDatePickerSheetProps>(
-  ({ initialDate, onDateSelected, onRemoveDate, onClose }, ref) => {
+export const SpecialDatePickerSheet = forwardRef<DatePickerSheetRef, SpecialDatePickerSheetProps>(
+  ({ initialDate, onDateSelected, onRemoveDate, onClose, allowPastDates = false }, ref) => {
     const { isDark } = useTheme();
     const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
+    const bottomSheetRef = useRef<BottomSheet>(null);
 
-    const handleDateChange = (event: any, date?: Date) => {
+    // Android: Imperative date picker callback handler
+    const handleAndroidChange = (event: DateTimePickerEvent, date?: Date) => {
+      if (event.type === 'set' && date) {
+        setSelectedDate(date);
+        onDateSelected(date);
+      }
+      // 'dismissed' type means user cancelled - no action needed
+    };
+
+    // Android: Open native date picker dialog
+    const openAndroidPicker = () => {
+      DateTimePickerAndroid.open({
+        value: selectedDate,
+        mode: 'date',
+        ...(allowPastDates ? {} : { minimumDate: new Date() }),
+        onChange: handleAndroidChange,
+      });
+    };
+
+    // Android: Show options when date already selected (change or remove)
+    const showAndroidOptions = () => {
+      Alert.alert(
+        'Data Speciale',
+        'Cosa vuoi fare?',
+        [
+          { text: 'Annulla', style: 'cancel' },
+          {
+            text: 'Rimuovi Data',
+            style: 'destructive',
+            onPress: () => onRemoveDate?.(),
+          },
+          {
+            text: 'Cambia Data',
+            onPress: openAndroidPicker,
+          },
+        ]
+      );
+    };
+
+    // Expose expand/close methods via ref
+    useImperativeHandle(ref, () => ({
+      expand: () => {
+        if (Platform.OS === 'android') {
+          // Android: If date already set and can be removed, show options
+          if (onRemoveDate) {
+            showAndroidOptions();
+          } else {
+            // First time selecting - just open picker
+            openAndroidPicker();
+          }
+        } else {
+          // iOS: Open bottom sheet with spinner
+          bottomSheetRef.current?.expand();
+        }
+      },
+      close: () => {
+        bottomSheetRef.current?.close();
+      },
+    }));
+
+    // iOS: Component date change handler
+    const handleDateChange = (_event: DateTimePickerEvent, date?: Date) => {
       if (date) {
         setSelectedDate(date);
       }
     };
 
     const handleClose = () => {
-      if (ref && typeof ref !== 'function' && ref.current) {
-        ref.current.close();
-      }
+      bottomSheetRef.current?.close();
       onClose?.();
     };
 
     const handleConfirm = () => {
       onDateSelected(selectedDate);
-      if (ref && typeof ref !== 'function' && ref.current) {
-        ref.current.close();
-      }
+      bottomSheetRef.current?.close();
     };
 
     const handleRemove = () => {
       onRemoveDate?.();
-      if (ref && typeof ref !== 'function' && ref.current) {
-        ref.current.close();
-      }
+      bottomSheetRef.current?.close();
     };
 
+    // Android: No UI needed - picker opens imperatively via ref.expand()
+    if (Platform.OS === 'android') {
+      return null;
+    }
+
+    // iOS: Bottom sheet with inline spinner
     return (
       <NativeBottomSheet
-        ref={ref}
+        ref={bottomSheetRef}
         snapPoints={['55%']}
         enablePanDownToClose
         showCloseButton={false}
@@ -91,14 +166,14 @@ export const SpecialDatePickerSheet = forwardRef<BottomSheet, SpecialDatePickerS
           </Pressable>
         </View>
 
-        {/* Date Picker */}
+        {/* Date Picker - iOS only, spinner display */}
         <View style={styles.pickerContainer}>
           <DateTimePicker
             value={selectedDate}
             mode="date"
             display="spinner"
             onChange={handleDateChange}
-            minimumDate={new Date()}
+            {...(allowPastDates ? {} : { minimumDate: new Date() })}
             textColor={isDark ? Colors.white : Colors.text.light}
             style={styles.picker}
           />
@@ -135,27 +210,27 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing[4],
-    paddingTop: Spacing[4], // ensuring top padding
+    paddingTop: Spacing[4],
     paddingBottom: Spacing[2],
   } as ViewStyle,
   headerButton: {
-    width: 40, // Slightly smaller
+    width: 40,
     height: 40,
     borderRadius: BorderRadius.full,
-    backgroundColor: 'rgba(120, 120, 128, 0.08)', // More subtle
+    backgroundColor: 'rgba(120, 120, 128, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   } as ViewStyle,
   headerCenter: {
-    position: 'absolute', // Absolute centering ensures it's dead center regardless of button widths
+    position: 'absolute',
     left: 0,
     right: 0,
     alignItems: 'center',
-    pointerEvents: 'none', // pass through touches
+    pointerEvents: 'none',
     zIndex: -1,
   } as ViewStyle,
   title: {
-    fontSize: FontSizes.base, // Smaller (16)
+    fontSize: FontSizes.base,
     fontWeight: '600',
   } as TextStyle,
   subtitle: {

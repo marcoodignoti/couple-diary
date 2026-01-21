@@ -1,12 +1,13 @@
-import { Icon } from '../../components/ui/Icon';
 import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, ImageStyle, ScrollView, Text, TouchableOpacity, View, ViewStyle, TextStyle } from 'react-native';
+import { ImageStyle, ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Icon } from '../../components/ui/Icon';
 
+import { BorderRadius, Colors, FontSizes, Shadows, Spacing } from '../../constants/theme';
 import { useTheme } from '../../hooks/useTheme';
-import { Colors, BorderRadius, FontSizes, Spacing, Shadows } from '../../constants/theme';
 
 export default function OnboardingSecret() {
     const router = useRouter();
@@ -47,6 +48,8 @@ export default function OnboardingSecret() {
                                     <Image
                                         source={{ uri: 'https://ui-avatars.com/api/?name=Alex&background=random' }}
                                         style={styles.avatarImage}
+                                        contentFit="cover"
+                                        transition={200}
                                     />
                                 </View>
                                 <View>

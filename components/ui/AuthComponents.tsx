@@ -87,6 +87,9 @@ export function AuthButton({
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
             disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel={title}
+            accessibilityState={{ disabled: loading }}
         >
             <Animated.View
                 style={[
@@ -182,11 +185,7 @@ const styles = StyleSheet.create({
         color: '#2C3E50',
         borderWidth: 1,
         borderColor: 'rgba(232, 180, 184, 0.3)',
-        shadowColor: '#E8B4B8',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 2,
+        boxShadow: '0px 2px 8px rgba(232, 180, 184, 0.1)',
     },
     button: {
         backgroundColor: '#E8B4B8',
@@ -194,11 +193,7 @@ const styles = StyleSheet.create({
         padding: 16,
         alignItems: 'center',
         marginTop: 8,
-        shadowColor: '#E8B4B8',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
+        boxShadow: '0px 4px 8px rgba(232, 180, 184, 0.3)',
     },
     buttonSecondary: {
         backgroundColor: 'transparent',

@@ -1,7 +1,7 @@
+import BottomSheet from '@gorhom/bottom-sheet';
 import React, { forwardRef } from 'react';
 import { Pressable, Text, TextStyle, View, ViewStyle } from 'react-native';
-import BottomSheet from '@gorhom/bottom-sheet';
-import { Colors, BorderRadius, FontSizes, Spacing } from '../../constants/theme';
+import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
 import { useTheme } from '../../hooks/useTheme';
 import type { Mood } from '../../types';
 import { MOODS } from '../../utils/constants';
@@ -91,17 +91,20 @@ export const MoodPickerSheet = forwardRef<BottomSheet, MoodPickerSheetProps>(
                     backgroundColor: isSelected
                       ? Colors.primary.DEFAULT
                       : isDark
-                      ? Colors.stone[800]
-                      : Colors.white,
+                        ? Colors.stone[800]
+                        : Colors.white,
                     borderWidth: 2,
                     borderColor: isSelected
                       ? Colors.primary.DEFAULT
                       : isDark
-                      ? Colors.stone[700]
-                      : Colors.stone[200],
+                        ? Colors.stone[700]
+                        : Colors.stone[200],
                     transform: [{ scale: pressed ? 0.95 : 1 }],
                   },
                 ]}
+                accessibilityRole="button"
+                accessibilityLabel={mood.label}
+                accessibilityState={{ selected: isSelected }}
               >
                 <Text style={styles.emoji}>{mood.emoji}</Text>
                 <Text
@@ -111,8 +114,8 @@ export const MoodPickerSheet = forwardRef<BottomSheet, MoodPickerSheetProps>(
                       color: isSelected
                         ? Colors.white
                         : isDark
-                        ? Colors.stone[300]
-                        : Colors.text.light,
+                          ? Colors.stone[300]
+                          : Colors.text.light,
                       fontWeight: isSelected ? '700' : '500',
                     },
                   ]}
@@ -160,13 +163,7 @@ const styles = {
     width: '22%',
     minWidth: 70,
     aspectRatio: 1,
-    // iOS shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    // Android shadow
-    elevation: 2,
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
   } as ViewStyle,
   emoji: {
     fontSize: 32,
