@@ -74,7 +74,8 @@ export async function uploadPhoto(userId: string, imageUri: string): Promise<str
     const response = await fetch(uploadUri, { signal: controller.signal });
     clearTimeout(timeoutId);
     const blob = await response.blob();
-    const arrayBuffer = await new Response(blob).arrayBuffer();
+    // Pass blob directly to Supabase - it handles it better across platforms
+
 
     // Generate unique filename
     const extension = imageUri.split('.').pop() || 'jpg';
@@ -83,7 +84,7 @@ export async function uploadPhoto(userId: string, imageUri: string): Promise<str
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
-        .upload(fileName, arrayBuffer, {
+        .upload(fileName, blob, {
             contentType: `image/${extension}`,
             upsert: false,
         });
@@ -151,7 +152,8 @@ export async function uploadProfilePhoto(userId: string, imageUri: string): Prom
     const response = await fetch(imageUri, { signal: controller.signal });
     clearTimeout(timeoutId);
     const blob = await response.blob();
-    const arrayBuffer = await new Response(blob).arrayBuffer();
+    // Pass blob directly to Supabase
+
 
     // Use fixed filename to overwrite previous avatar
     const extension = imageUri.split('.').pop() || 'jpg';
@@ -160,7 +162,7 @@ export async function uploadProfilePhoto(userId: string, imageUri: string): Prom
     // Upload to Supabase Storage (upsert to replace existing)
     const { data, error } = await supabase.storage
         .from(PROFILE_BUCKET_NAME)
-        .upload(fileName, arrayBuffer, {
+        .upload(fileName, blob, {
             contentType: `image/${extension}`,
             upsert: true,
         });

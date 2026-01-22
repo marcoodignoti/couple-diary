@@ -138,7 +138,7 @@ export default function NewEntryScreen() {
             router.back();
         } catch (error: any) {
             console.error('Save error', error);
-            Alert.alert('Errore', 'Impossibile salvare il diario. Riprova.');
+            Alert.alert('Errore', `Impossibile salvare il diario: ${error.message}`);
         } finally {
             setIsUploading(false);
         }
