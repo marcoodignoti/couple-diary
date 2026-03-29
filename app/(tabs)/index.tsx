@@ -1,15 +1,22 @@
 import { Redirect, useRouter } from 'expo-router';
 import React, { useCallback, useMemo } from 'react';
-import { RefreshControl, ScrollView, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
-import Animated, { FadeInDown, FadeOut, LinearTransition } from 'react-native-reanimated';
+import { RefreshControl, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import Animated, { 
+  FadeInDown, 
+  FadeOut, 
+  LinearTransition, 
+  useAnimatedScrollHandler, 
+  useSharedValue 
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { EmptyState } from '../../components/ui/EmptyState';
 import { HeroCard } from '../../components/ui/HeroCard';
 import { StreakCounter } from '../../components/ui/StreakCounter';
+import { NativeHeader } from '../../components/ui/NativeHeader';
 import { BorderRadius, Colors, FontSizes, Spacing } from '../../constants/theme';
 import { useMyEntries, useOnThisDay, usePartnerEntries } from '../../hooks/useEntryQueries';
 import { useResponsive } from '../../hooks/useResponsive';
-import { useStatusBarPadding } from '../../hooks/useStatusBarPadding';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -54,11 +61,19 @@ function useRevealWindow() {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, partner, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const { isDark, colors } = useTheme();
   const { contentMaxWidth, isTablet, horizontalPadding } = useResponsive();
-  const statusBarPadding = useStatusBarPadding();
   const { isOpen: isRevealOpen, countdownText } = useRevealWindow();
+
+  // Reanimated scroll logic for progressive header blur
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
   // React Query hooks - data is automatically cached and refetched
   const {
@@ -128,44 +143,64 @@ export default function HomeScreen() {
     return <Redirect href="/onboarding/welcome" />;
   }
 
+  // Header height logic: 44 (iOS standard) + status bar inset
+  const headerHeight = 44 + insets.top;
+
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={{
-        paddingBottom: 120,
-        paddingTop: statusBarPadding,
-        paddingHorizontal: horizontalPadding,
-        alignItems: isTablet ? 'center' : undefined,
-      }}
-      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={Colors.primary.DEFAULT} />}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={{ width: '100%', maxWidth: contentMaxWidth }}>
-        {/* Header */}
-        <Animated.View entering={FadeInDown.duration(600)} style={styles.headerContainer}>
-          <View style={styles.headerRow}>
-            <View>
-              <View style={styles.greetingRow}>
-                <Text selectable style={[styles.greetingText, { color: isDark ? Colors.white : Colors.text.light }]}>
-                  {getGreeting()},{'\n'}{user?.name || 'Amico/a'}.
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <NativeHeader 
+        title="Diario" 
+        scrollY={scrollY}
+        rightAction={{
+          icon: 'stars',
+          onPress: () => router.push('/gamification/milestones' as any),
+        }}
+      />
+      <Animated.ScrollView
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        contentInsetAdjustmentBehavior="automatic"
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingBottom: 120,
+          paddingTop: headerHeight + Spacing[4], // Base padding + Header height
+          paddingHorizontal: horizontalPadding,
+          alignItems: isTablet ? 'center' : undefined,
+        }}
+        refreshControl={
+          <RefreshControl 
+            refreshing={isRefreshing} 
+            onRefresh={handleRefresh} 
+            tintColor={Colors.primary.DEFAULT}
+            progressViewOffset={headerHeight} // Offset the spinner so it's not under the header
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={{ width: '100%', maxWidth: contentMaxWidth }}>
+          {/* Header Section */}
+          <Animated.View entering={FadeInDown.duration(600)} style={styles.headerContainer}>
+            <View style={styles.headerRow}>
+              <View>
+                <View style={styles.greetingRow}>
+                  <Text selectable style={[styles.greetingText, { color: isDark ? Colors.white : Colors.text.light }]}>
+                    {getGreeting()},{'\n'}{user?.name || 'Amico/a'}.
+                  </Text>
+                </View>
+                <Text selectable style={[styles.statusText, { color: isDark ? Colors.stone[400] : Colors.stone[500] }]}>
+                  {partner ? `Connesso con ${partner.name}` : 'Pronto a connetterti?'}
                 </Text>
               </View>
-              <Text selectable style={[styles.statusText, { color: isDark ? Colors.stone[400] : Colors.stone[500] }]}>
-                {partner ? `Connesso con ${partner.name}` : 'Pronto a connetterti?'}
-              </Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push('/gamification/milestones' as any)}
+              >
+                <StreakCounter streak={user?.current_streak || 0} />
+              </TouchableOpacity>
             </View>
-            {/* Gamification: Streak Counter */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => router.push('/gamification/milestones' as any)}
-            >
-              <StreakCounter streak={user?.current_streak || 0} />
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+          </Animated.View>
 
-        <Animated.View layout={LinearTransition} style={styles.cardsContainer}>
+          <Animated.View layout={LinearTransition} style={styles.cardsContainer}>
           {/* Featured Card: Write Today - Pink Theme */}
           <Animated.View entering={FadeInDown.delay(100).duration(600)} exiting={FadeOut.duration(200)}>
             <HeroCard
@@ -322,7 +357,8 @@ export default function HomeScreen() {
           )}
         </Animated.View>
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
+  </View>
   );
 }
 

@@ -1,30 +1,30 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Icon, Label, NativeTabs, VectorIcon } from 'expo-router/unstable-native-tabs';
+import { NativeTabs, VectorIcon } from 'expo-router/unstable-native-tabs';
 import { Colors } from '../../constants/theme';
 
 export default function TabLayout() {
   return (
     <NativeTabs tintColor={Colors.primary.DEFAULT}>
       <NativeTabs.Trigger name="index">
-        <Label>Diario</Label>
-        <Icon
-          sf="pencil"
+        <NativeTabs.Trigger.Label>Diario</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf="square.and.pencil"
           androidSrc={<VectorIcon family={MaterialIcons} name="edit" />}
         />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="calendar">
-        <Label>Ricordi</Label>
-        <Icon
+        <NativeTabs.Trigger.Label>Ricordi</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
           sf="calendar"
           androidSrc={<VectorIcon family={MaterialIcons} name="calendar-today" />}
         />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">
-        <Label>Profilo</Label>
-        <Icon
-          sf="person.fill"
+        <NativeTabs.Trigger.Label>Profilo</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf="person.circle"
           androidSrc={<VectorIcon family={MaterialIcons} name="person" />}
         />
       </NativeTabs.Trigger>

@@ -1,0 +1,19 @@
+Sul branch main
+Il tuo branch è aggiornato rispetto a 'origin/main'.
+
+Modifiche di cui verrà eseguito il commit:
+  (usa "git restore --staged <file>..." per rimuovere gli elementi dall'area di staging)
+	modificato:             app.json
+	modificato:             app/(tabs)/_layout.tsx
+	modificato:             app/(tabs)/index.tsx
+	eliminato:              babel.config.js
+	nuovo file:             components/ui/NativeHeader.tsx
+	eliminato:              nativewind-env.d.ts
+	modificato:             package-lock.json
+	modificato:             package.json
+	nuovo file:             prompt.txt
+
+File non tracciati:
+  (usa "git add <file>..." per includere l'elemento fra quelli di cui verrà eseguito il commit)
+	status.txt
+

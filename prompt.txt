@@ -1,0 +1,2 @@
+use all the ios, the agent, the orchestration, the brainstorming and planning skills you    
+   have to migrate this project to a Swift native iOS application.     

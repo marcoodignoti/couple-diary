@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "couplediary",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -36,14 +35,16 @@
       "@react-native-community/datetimepicker",
       "expo-sqlite",
       "expo-local-authentication",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-image",
+      "expo-web-browser"
     ],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FAF9F6"
       },
-      "edgeToEdgeEnabled": false,
       "package": "com.yourname.couplediary",
       "permissions": [
         "USE_BIOMETRIC",
